@@ -4,6 +4,7 @@ Checks: >
   clang-analyzer-*,
   modernize-*,
   performance-*,
-  readability-*
+  readability-*,
+  -bugprone-easily-swappable-parameters
 
 HeaderFilterRegex: '.*'
