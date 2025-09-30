@@ -6,12 +6,12 @@
 
 class Scene {
 public:
-	Framebuffer* framebuffer;
-	PlanarPinholeCamera* camera;
-	std::vector<TriangleMesh> meshes;
-	Scene() = default;
+  Framebuffer *framebuffer;
+  PlanarPinholeCamera *camera;
+  std::vector<TriangleMesh> meshes;
+  Scene();
 
-	void Render();
+  void Render();
 };
 
-extern Scene* scene;
+extern Scene *scene;
