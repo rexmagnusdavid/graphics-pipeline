@@ -6,7 +6,7 @@ class Vector3 {
 public:
 	std::array<float, 3> coordinates;
 	Vector3() = default;
-	Vector3(float x_coordinate, float y_coordinate, float z_coordinate);
+	Vector3(float coordinate_0, float coordinate_1, float coordinate_2);
 
 	friend auto operator>>(std::istream& input, Vector3& vector) -> std::istream&;
 	friend auto operator<<(std::ostream& output, Vector3 vector) -> std::ostream&;
