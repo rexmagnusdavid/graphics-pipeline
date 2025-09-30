@@ -1,10 +1,10 @@
 #pragma once
 
 namespace Color {
-constexpr unsigned int BLACK = 0xFF000000;
-constexpr unsigned int RED = 0xFFFF0000;
-constexpr unsigned int GREEN = 0xFF00FF00;
-constexpr unsigned int BLUE = 0xFF0000FF;
+constexpr unsigned int BLACK = 0x000000FF;
+constexpr unsigned int RED = 0xFF0000FF;
+constexpr unsigned int GREEN = 0x00FF00FF;
+constexpr unsigned int BLUE = 0x0000FFFF;
 constexpr unsigned int WHITE = 0xFFFFFFFF;
 
 constexpr float MIN_ALPHA_CHANNEL = 0.0F;
