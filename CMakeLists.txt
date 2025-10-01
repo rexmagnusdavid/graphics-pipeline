@@ -9,18 +9,27 @@ find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(TIFF REQUIRED)
-find_package(FLTK REQUIRED)
 
-file(GLOB APP_SOURCES "src/*.cpp" "src/*.cxx")
+set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/imgui)
+file(GLOB IMGUI_SOURCES 
+    ${IMGUI_DIR}/*.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_glut.cpp
+)
 
-add_executable(renderer ${APP_SOURCES})
+file(GLOB APP_SOURCES "src/*.cpp")
 
-target_include_directories(renderer PRIVATE include)
+add_executable(renderer ${APP_SOURCES} ${IMGUI_SOURCES})
+
+target_include_directories(renderer PRIVATE
+    include
+    ${IMGUI_DIR}
+    ${IMGUI_DIR}/backends
+)
 
 target_link_libraries(renderer PRIVATE
     ${OPENGL_LIBRARIES}
     ${GLEW_LIBRARIES}
     ${GLUT_LIBRARIES}
     ${TIFF_LIBRARIES}
-    ${FLTK_LIBRARIES}
 )
