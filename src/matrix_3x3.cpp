@@ -1,6 +1,6 @@
-#include <cmath>
-
 #include "graphics_pipeline/matrix_3x3.h"
+
+#include <cmath>
 
 Matrix3x3::Matrix3x3(Vector3 row_0, Vector3 row_1, Vector3 row_2) {
   rows[0] = row_0;

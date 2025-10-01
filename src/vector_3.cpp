@@ -1,8 +1,9 @@
+#include "graphics_pipeline/vector_3.h"
+
 #include <cmath>
 
 #include "graphics_pipeline/color.h"
 #include "graphics_pipeline/matrix_3x3.h"
-#include "graphics_pipeline/vector_3.h"
 
 Vector3::Vector3(float coordinate_0, float coordinate_1, float coordinate_2) {
   coordinates[0] = coordinate_0;

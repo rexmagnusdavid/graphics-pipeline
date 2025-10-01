@@ -1,43 +1,13 @@
 #include "graphics_pipeline/framebuffer.h"
 
 #include <iostream>
+#include <tiffio.h>
 
-Framebuffer::Framebuffer(int u_coordinate, int v_coordinate, int _width,
-                         int _height)
-    : Fl_Gl_Window(u_coordinate, v_coordinate, _width, _height, nullptr) {
+Framebuffer::Framebuffer(int _width, int _height) {
   width = _width;
   height = _height;
   pixels.resize(static_cast<long>(width) * height);
 }
-
-void Framebuffer::draw() {
-  glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
-}
-
-auto Framebuffer::handle(int event) -> int {
-  switch (event) {
-  case FL_KEYBOARD: {
-    HandleKeyboard();
-    return 0;
-  }
-  case FL_MOVE: {
-    int u_coordinate = Fl::event_x();
-    int v_coordinate = Fl::event_y();
-    if (u_coordinate < 0 || u_coordinate > width - 1 || v_coordinate < 0 ||
-        v_coordinate > height - 1) {
-      return 0;
-    }
-    std::cerr << u_coordinate << " " << v_coordinate << "         \r";
-    return 0;
-  }
-  default: {
-    return 0;
-  }
-  }
-  return 0;
-}
-
-void Framebuffer::HandleKeyboard() { int key = Fl::event_key(); }
 
 void Framebuffer::LoadTiff(char *file_name) {
   TIFF *input = TIFFOpen(file_name, "r");
@@ -55,8 +25,6 @@ void Framebuffer::LoadTiff(char *file_name) {
   height = _height;
   pixels.clear();
   pixels.resize(static_cast<long>(width) * height);
-  size(width, height);
-  glFlush();
 
   if (TIFFReadRGBAImage(input, width, height, pixels.data(), 0) == 0) {
     std::cerr << "failed to load " << file_name << '\n';

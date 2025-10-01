@@ -1,9 +1,10 @@
+#include "graphics_pipeline/planar_pinhole_camera.h"
+
 #include <algorithm>
 #include <fstream>
 #include <iostream>
 
 #include "graphics_pipeline/matrix_3x3.h"
-#include "graphics_pipeline/planar_pinhole_camera.h"
 
 PlanarPinholeCamera::PlanarPinholeCamera(int width, int height,
                                          float horizontal_fov)

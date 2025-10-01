@@ -1,27 +1,16 @@
 #pragma once
 
-#include <FL/Fl.H>
-#include <FL/Fl_Gl_Window.H>
-#include <GL/glew.h>
-#include <GL/glut.h>
-#include <tiffio.h>
-
 #include <vector>
 
 #include "planar_pinhole_camera.h"
 #include "vector_3.h"
 
-class Framebuffer : public Fl_Gl_Window {
+class Framebuffer {
 public:
   std::vector<unsigned int> pixels;
   int width, height;
   Framebuffer() = delete;
-  Framebuffer(int u_coordinate, int v_coordinate, int _width, int _height);
-
-  void draw() override;
-  auto handle(int event) -> int override;
-
-  static void HandleKeyboard();
+  Framebuffer(int _width, int _height);
 
   void LoadTiff(char *file_name);
   void SaveTiff(char *file_name);
