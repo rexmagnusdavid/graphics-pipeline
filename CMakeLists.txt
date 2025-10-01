@@ -7,14 +7,14 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
-find_package(GLUT REQUIRED)
+find_package(glfw3 REQUIRED)
 find_package(TIFF REQUIRED)
 
 set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/imgui)
-file(GLOB IMGUI_SOURCES 
+file(GLOB IMGUI_SOURCES
     ${IMGUI_DIR}/*.cpp
     ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_glut.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
 )
 
 file(GLOB APP_SOURCES "src/*.cpp")
@@ -30,6 +30,6 @@ target_include_directories(renderer PRIVATE
 target_link_libraries(renderer PRIVATE
     ${OPENGL_LIBRARIES}
     ${GLEW_LIBRARIES}
-    ${GLUT_LIBRARIES}
+    glfw
     ${TIFF_LIBRARIES}
 )

@@ -3,10 +3,21 @@
 #include <iostream>
 #include <tiffio.h>
 
-Framebuffer::Framebuffer(int _width, int _height) {
+Framebuffer::Framebuffer(int _width, int _height, const char *title) {
   width = _width;
   height = _height;
   pixels.resize(static_cast<long>(width) * height);
+
+  window = glfwCreateWindow(width, height, title, nullptr, nullptr);
+  glfwMakeContextCurrent(window);
+
+  glewInit();
+}
+
+Framebuffer::~Framebuffer() { glfwDestroyWindow(window); }
+
+void Framebuffer::Render() {
+  glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
 }
 
 void Framebuffer::LoadTiff(char *file_name) {
@@ -25,6 +36,7 @@ void Framebuffer::LoadTiff(char *file_name) {
   height = _height;
   pixels.clear();
   pixels.resize(static_cast<long>(width) * height);
+  glfwSetWindowSize(window, width, height);
 
   if (TIFFReadRGBAImage(input, width, height, pixels.data(), 0) == 0) {
     std::cerr << "failed to load " << file_name << '\n';

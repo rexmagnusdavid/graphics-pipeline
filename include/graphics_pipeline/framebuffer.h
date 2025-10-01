@@ -1,5 +1,7 @@
 #pragma once
 
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #include <vector>
 
 #include "planar_pinhole_camera.h"
@@ -9,8 +11,11 @@ class Framebuffer {
 public:
   std::vector<unsigned int> pixels;
   int width, height;
-  Framebuffer() = delete;
-  Framebuffer(int _width, int _height);
+  GLFWwindow *window;
+  Framebuffer(int _width, int _height, const char *title);
+  ~Framebuffer();
+
+  void Render();
 
   void LoadTiff(char *file_name);
   void SaveTiff(char *file_name);
