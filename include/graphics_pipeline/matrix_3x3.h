@@ -23,5 +23,8 @@ public:
   auto GetTranspose() -> Matrix3x3;
   auto GetInverse() -> Matrix3x3;
 
+  static auto Identity() -> Matrix3x3;
+  static auto RotateAboutX(float angle) -> Matrix3x3;
   static auto RotateAboutY(float angle) -> Matrix3x3;
+  static auto RotateAboutZ(float angle) -> Matrix3x3;
 };

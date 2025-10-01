@@ -83,12 +83,42 @@ auto Matrix3x3::GetInverse() -> Matrix3x3 {
   return ret;
 }
 
+auto Matrix3x3::Identity() -> Matrix3x3 {
+  Matrix3x3 ret;
+
+  ret[0] = Vector3(1.0F, 0.0F, 0.0F);
+  ret[1] = Vector3(0.0F, 1.0F, 0.0F);
+  ret[2] = Vector3(0.0F, 0.0F, 1.0F);
+
+  return ret;
+}
+
+auto Matrix3x3::RotateAboutX(float angle) -> Matrix3x3 {
+  Matrix3x3 ret;
+
+  ret[0] = Vector3(1.0F, 0.0F, 0.0F);
+  ret[1] = Vector3(0.0F, cosf(angle), -sinf(angle));
+  ret[2] = Vector3(0.0F, sinf(angle), cosf(angle));
+
+  return ret;
+}
+
 auto Matrix3x3::RotateAboutY(float angle) -> Matrix3x3 {
   Matrix3x3 ret;
 
   ret[0] = Vector3(cosf(angle), 0.0F, sinf(angle));
   ret[1] = Vector3(0.0F, 1.0F, 0.0F);
   ret[2] = Vector3(-sinf(angle), 0.0F, cosf(angle));
+
+  return ret;
+}
+
+auto Matrix3x3::RotateAboutZ(float angle) -> Matrix3x3 {
+  Matrix3x3 ret;
+
+  ret[0] = Vector3(cosf(angle), -sinf(angle), 0.0F);
+  ret[1] = Vector3(sinf(angle), cosf(angle), 0.0F);
+  ret[2] = Vector3(0.0F, 0.0F, 1.0F);
 
   return ret;
 }

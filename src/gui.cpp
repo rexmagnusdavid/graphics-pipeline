@@ -47,6 +47,7 @@ void GUI::Render() {
       ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings |
       ImGuiWindowFlags_NoBringToFrontOnFocus;
   ImGui::Begin("MainPanel", nullptr, window_flags);
+
   if (ImGui::Button("DBG")) {
     scene->DBG();
   }
@@ -65,9 +66,13 @@ void GUI::Render() {
   if (ImGui::Button("Animate Name")) {
     scene->AnimateName();
   }
+  if (ImGui::Button("Draw Rotation Graph (A2)")) {
+    scene->DrawRotationGraph();
+  }
   if (ImGui::Button("Save as .tiff")) {
     scene->SaveTiff();
   }
+
   ImGui::End();
 
   ImGui::Render();

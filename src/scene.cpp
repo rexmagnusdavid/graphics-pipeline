@@ -3,6 +3,7 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <cmath>
 #include <iostream>
 
 Scene *scene;
@@ -220,11 +221,146 @@ void Scene::AnimateName() {
   }
 }
 
+void Scene::DrawRotationGraph() {
+  glfwMakeContextCurrent(framebuffer->window);
+
+  std::cout << "Drawing rotation graph..." << std::endl;
+
+  framebuffer->FillBackground(Color::WHITE);
+
+  // Define the point to rotate
+  Vector3 point(1.0F, 0.5F, 0.25F);
+
+  // Define arbitrary axis
+  Vector3 axis_origin(0.0F, 0.0F, 0.0F);
+  Vector3 axis_direction(1.0F, 1.0F, 1.0F);
+
+  // Rotate 360 times with 2 degree increments (180 steps for 360 degrees)
+  constexpr int num_steps = 180;
+  constexpr float angle_increment =
+      2.0F * M_PI / 180.0F; // 2 degrees in radians
+
+  std::vector<Vector3> rotated_points;
+  rotated_points.reserve(num_steps);
+
+  // Calculate all rotated points
+  for (int i = 0; i < num_steps; i++) {
+    float angle = i * angle_increment;
+    Vector3 rotated = point.RotateAboutAxis(axis_origin, axis_direction, angle);
+    rotated_points.push_back(rotated);
+  }
+
+  // Find min and max values for scaling
+  float min_x = rotated_points[0].coordinates[0];
+  float max_x = rotated_points[0].coordinates[0];
+  float min_y = rotated_points[0].coordinates[1];
+  float max_y = rotated_points[0].coordinates[1];
+  float min_z = rotated_points[0].coordinates[2];
+  float max_z = rotated_points[0].coordinates[2];
+
+  for (const auto &point_data : rotated_points) {
+    min_x = std::min(min_x, point_data.coordinates[0]);
+    max_x = std::max(max_x, point_data.coordinates[0]);
+    min_y = std::min(min_y, point_data.coordinates[1]);
+    max_y = std::max(max_y, point_data.coordinates[1]);
+    min_z = std::min(min_z, point_data.coordinates[2]);
+    max_z = std::max(max_z, point_data.coordinates[2]);
+  }
+
+  // Graph layout parameters
+  const int margin = 50;
+  const int graph_width = framebuffer->width - 2 * margin;
+  const int graph_height = framebuffer->height - 2 * margin;
+
+  // Find overall min/max for y-axis scaling
+  float data_min = std::min({min_x, min_y, min_z});
+  float data_max = std::max({max_x, max_y, max_z});
+  float data_range = data_max - data_min;
+
+  // Draw axes
+  Vector3 origin(margin, framebuffer->height - margin, 0);
+  Vector3 x_axis_end(margin + graph_width, framebuffer->height - margin, 0);
+  Vector3 y_axis_end(margin, framebuffer->height - margin - graph_height, 0);
+
+  framebuffer->Draw2DSegment(origin, x_axis_end, Color::BLACK);
+  framebuffer->Draw2DSegment(origin, y_axis_end, Color::BLACK);
+
+  // Draw grid lines and labels
+  for (int i = 0; i <= 4; i++) {
+    int y_pos = framebuffer->height - margin - (i * graph_height / 4);
+    Vector3 grid_start(margin, y_pos, 0);
+    Vector3 grid_end(margin + graph_width, y_pos, 0);
+    framebuffer->Draw2DSegment(grid_start, grid_end, 0xE0E0E0FF); // Light gray
+  }
+
+  // Plot the three curves
+  auto plot_curve = [&](int coord_index, unsigned int color) {
+    for (int i = 0; i < num_steps - 1; i++) {
+      // Map step index to x coordinate
+      int x1 = margin + (i * graph_width / num_steps);
+      int x2 = margin + ((i + 1) * graph_width / num_steps);
+
+      // Map coordinate value to y coordinate
+      float val1 =
+          (rotated_points[i].coordinates[coord_index] - data_min) / data_range;
+      float val2 = (rotated_points[i + 1].coordinates[coord_index] - data_min) /
+                   data_range;
+
+      int y1 = framebuffer->height - margin - (int)(val1 * graph_height);
+      int y2 = framebuffer->height - margin - (int)(val2 * graph_height);
+
+      Vector3 p1(x1, y1, 0);
+      Vector3 p2(x2, y2, 0);
+
+      framebuffer->Draw2DSegment(p1, p2, color);
+    }
+  };
+
+  // Plot X coordinate in red
+  plot_curve(0, Color::RED);
+
+  // Plot Y coordinate in green
+  plot_curve(1, Color::GREEN);
+
+  // Plot Z coordinate in blue
+  plot_curve(2, Color::BLUE);
+
+  // Draw legend
+  int legend_x = margin + 20;
+  int legend_y = margin + 20;
+  int legend_spacing = 20;
+
+  Vector3 legend_x_start(legend_x, legend_y, 0);
+  Vector3 legend_x_end(legend_x + 30, legend_y, 0);
+  framebuffer->Draw2DSegment(legend_x_start, legend_x_end, Color::RED);
+
+  Vector3 legend_y_start(legend_x, legend_y + legend_spacing, 0);
+  Vector3 legend_y_end(legend_x + 30, legend_y + legend_spacing, 0);
+  framebuffer->Draw2DSegment(legend_y_start, legend_y_end, Color::GREEN);
+
+  Vector3 legend_z_start(legend_x, legend_y + 2 * legend_spacing, 0);
+  Vector3 legend_z_end(legend_x + 30, legend_y + 2 * legend_spacing, 0);
+  framebuffer->Draw2DSegment(legend_z_start, legend_z_end, Color::BLUE);
+
+  framebuffer->Render();
+
+  std::cout << "Graph complete. Point: (" << point[0] << ", " << point[1]
+            << ", " << point[2] << ")" << std::endl;
+  std::cout << "Axis origin: (" << axis_origin[0] << ", " << axis_origin[1]
+            << ", " << axis_origin[2] << ")" << std::endl;
+  std::cout << "Axis direction: (" << axis_direction[0] << ", "
+            << axis_direction[1] << ", " << axis_direction[2] << ")"
+            << std::endl;
+  std::cout << "Red = X coordinate, Green = Y coordinate, Blue = Z coordinate"
+            << std::endl;
+}
+
 void Scene::SaveTiff() {
   char filename[] = "framebuffer.tif";
   framebuffer->SaveTiff(filename);
   std::cout << "Saved framebuffer to " << filename << std::endl;
 }
+
 void Scene::Run() {
   // Main loop
   while (!glfwWindowShouldClose(framebuffer->window) &&
@@ -360,6 +496,9 @@ void Scene::HandleKeyInput(int key, int action, int mods) {
       break;
     case GLFW_KEY_4:
       DrawName();
+      break;
+    case GLFW_KEY_5:
+      DrawRotationGraph();
       break;
 
     // Save screenshot

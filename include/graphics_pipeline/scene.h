@@ -22,6 +22,7 @@ public:
   void DrawLine();
   void DrawName();
   void AnimateName();
+  void DrawRotationGraph();
   void SaveTiff();
 
 private:
