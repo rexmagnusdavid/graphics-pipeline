@@ -12,6 +12,9 @@ GUI::GUI(int _width, int _height, const char *title) {
   width = _width;
   height = _height;
 
+  glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+  glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
   window = glfwCreateWindow(width, height, title, nullptr, nullptr);
   glfwMakeContextCurrent(window);
 
@@ -33,8 +36,17 @@ GUI::~GUI() {
 }
 
 void GUI::Render() {
-  ImGui::Begin("MainPanel");
+  ImGui_ImplOpenGL3_NewFrame();
+  ImGui_ImplGlfw_NewFrame();
+  ImGui::NewFrame();
 
+  ImGui::SetNextWindowPos(ImVec2(0, 0));
+  ImGui::SetNextWindowSize(ImVec2((float)width, (float)height));
+  ImGuiWindowFlags window_flags =
+      ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
+      ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings |
+      ImGuiWindowFlags_NoBringToFrontOnFocus;
+  ImGui::Begin("MainPanel", nullptr, window_flags);
   if (ImGui::Button("DBG")) {
     scene->DBG();
   }
@@ -56,6 +68,8 @@ void GUI::Render() {
   if (ImGui::Button("Save as .tiff")) {
     scene->SaveTiff();
   }
-
   ImGui::End();
+
+  ImGui::Render();
+  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }

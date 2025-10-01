@@ -8,6 +8,9 @@ Framebuffer::Framebuffer(int _width, int _height, const char *title) {
   height = _height;
   pixels.resize(static_cast<long>(width) * height);
 
+  glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+  glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
   window = glfwCreateWindow(width, height, title, nullptr, nullptr);
   glfwMakeContextCurrent(window);
 
@@ -18,6 +21,8 @@ Framebuffer::~Framebuffer() { glfwDestroyWindow(window); }
 
 void Framebuffer::Render() {
   glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+
+  glfwSwapBuffers(window);
 }
 
 void Framebuffer::LoadTiff(char *file_name) {
