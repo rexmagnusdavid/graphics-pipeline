@@ -93,32 +93,6 @@ void Framebuffer::FillBackground(unsigned int color) {
   }
 }
 
-void Framebuffer::FillCheckboard(unsigned int color_0, unsigned int color_1, int size) {
-  for (int v_coordinate = 0; v_coordinate < height; v_coordinate++) {
-    for (int u_coordinate = 0; u_coordinate < width; u_coordinate++) {
-      int color_u = u_coordinate / size;
-      int color_v = v_coordinate / size;
-      if (((color_u + color_v) % 2) != 0) {
-        SetPixel(u_coordinate, v_coordinate, color_0);
-        continue;
-      }
-
-      SetPixel(u_coordinate, v_coordinate, color_1);
-    }
-  }
-}
-
-void Framebuffer::DrawPoint(Vector3 point, unsigned int color, int size) {
-  int u_point = (int)point.coordinates[0];
-  int v_point = (int)point.coordinates[1];
-
-  for (int v_coordinate = v_point - (size / 2); v_coordinate < v_point + size / 2; v_coordinate++) {
-    for (int u_coordinate = u_point - (size / 2); u_coordinate < u_point + size / 2; u_coordinate++) {
-      SetPixel(u_coordinate, v_coordinate, color);
-    }
-  }
-}
-
 void Framebuffer::DrawSegment(Vector3 point_0, Vector3 point_1, unsigned int color) {
   point_0.coordinates[2] = 0.0F;
   point_1.coordinates[2] = 0.0F;

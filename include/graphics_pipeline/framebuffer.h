@@ -23,9 +23,6 @@ public:
   void SetPixel(int u_coordinate, int v_coordinate, unsigned int color);
 
   void FillBackground(unsigned int color);
-  void FillCheckboard(unsigned int color_0, unsigned int color_1, int size);
-
-  void DrawPoint(Vector3 point, unsigned int color, int size);
   void DrawSegment(Vector3 point_0, Vector3 point_1, unsigned int color);
   void DrawSegment(Vector3 point_0, Vector3 point_1, Vector3 color_0, Vector3 color_1);
 };
