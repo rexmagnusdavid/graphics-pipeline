@@ -2,8 +2,6 @@
 
 #include <vector>
 
-#include "framebuffer.h"
-#include "planar_pinhole_camera.h"
 #include "vector_3.h"
 
 class TriangleMesh {
@@ -23,8 +21,8 @@ public:
   void Translate(Vector3 vector);
   void RotateAboutAxis(Vector3 origin, Vector3 direction, float angle);
 
-  void DrawPoints(PlanarPinholeCamera *camera, Framebuffer *framebuffer,
-                  unsigned int color, int size);
-  void DrawWireFrame(PlanarPinholeCamera *camera, Framebuffer *framebuffer,
-                     unsigned int color);
+  static auto AxisAlignedBox(Vector3 corner_0, Vector3 corner_1, unsigned int color) -> TriangleMesh;
+  static auto Sphere(Vector3 position, float radius, int subdivisions, unsigned int color) -> TriangleMesh;
+  static auto Cylinder(Vector3 position, float radius, float height, int subdivisions, unsigned int color)
+      -> TriangleMesh;
 };

@@ -42,10 +42,8 @@ void GUI::Render() {
 
   ImGui::SetNextWindowPos(ImVec2(0, 0));
   ImGui::SetNextWindowSize(ImVec2((float)width, (float)height));
-  ImGuiWindowFlags window_flags =
-      ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
-      ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings |
-      ImGuiWindowFlags_NoBringToFrontOnFocus;
+  ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
+                                  ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus;
   ImGui::Begin("MainPanel", nullptr, window_flags);
 
   if (ImGui::Button("DBG")) {

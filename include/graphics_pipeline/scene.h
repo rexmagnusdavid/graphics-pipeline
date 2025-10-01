@@ -10,7 +10,7 @@ public:
   GUI *gui;
   Framebuffer *framebuffer;
   PlanarPinholeCamera *camera;
-  std::vector<TriangleMesh> meshes;
+  TriangleMesh *mesh;
   Scene();
   ~Scene();
 
@@ -26,14 +26,10 @@ public:
   void SaveTiff();
 
 private:
-  static void KeyCallback(GLFWwindow *window, int key, int scancode, int action,
-                          int mods);
-  static void MouseButtonCallback(GLFWwindow *window, int button, int action,
-                                  int mods);
-  static void CursorPositionCallback(GLFWwindow *window, double xpos,
-                                     double ypos);
-  static void ScrollCallback(GLFWwindow *window, double xoffset,
-                             double yoffset);
+  static void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
+  static void MouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
+  static void CursorPositionCallback(GLFWwindow *window, double xpos, double ypos);
+  static void ScrollCallback(GLFWwindow *window, double xoffset, double yoffset);
 
   void HandleKeyInput(int key, int action, int mods);
   void HandleMouseButton(int button, int action, int mods);

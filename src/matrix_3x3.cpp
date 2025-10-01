@@ -93,7 +93,7 @@ auto Matrix3x3::Identity() -> Matrix3x3 {
   return ret;
 }
 
-auto Matrix3x3::RotateAboutX(float angle) -> Matrix3x3 {
+auto Matrix3x3::RotationAboutX(float angle) -> Matrix3x3 {
   Matrix3x3 ret;
 
   ret[0] = Vector3(1.0F, 0.0F, 0.0F);
@@ -103,7 +103,7 @@ auto Matrix3x3::RotateAboutX(float angle) -> Matrix3x3 {
   return ret;
 }
 
-auto Matrix3x3::RotateAboutY(float angle) -> Matrix3x3 {
+auto Matrix3x3::RotationAboutY(float angle) -> Matrix3x3 {
   Matrix3x3 ret;
 
   ret[0] = Vector3(cosf(angle), 0.0F, sinf(angle));
@@ -113,7 +113,7 @@ auto Matrix3x3::RotateAboutY(float angle) -> Matrix3x3 {
   return ret;
 }
 
-auto Matrix3x3::RotateAboutZ(float angle) -> Matrix3x3 {
+auto Matrix3x3::RotationAboutZ(float angle) -> Matrix3x3 {
   Matrix3x3 ret;
 
   ret[0] = Vector3(cosf(angle), -sinf(angle), 0.0F);

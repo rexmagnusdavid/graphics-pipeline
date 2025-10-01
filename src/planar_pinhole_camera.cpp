@@ -6,9 +6,7 @@
 
 #include "graphics_pipeline/matrix_3x3.h"
 
-PlanarPinholeCamera::PlanarPinholeCamera(int width, int height,
-                                         float horizontal_fov)
-    : width(width), height(height) {
+PlanarPinholeCamera::PlanarPinholeCamera(int width, int height, float horizontal_fov) : width(width), height(height) {
   position = Vector3(0.0F, 0.0F, 0.0F);
   right = Vector3(1.0F, 0.0F, 0.0F);
   up = Vector3(0.0F, 1.0F, 0.0F);
@@ -75,12 +73,9 @@ void PlanarPinholeCamera::Zoom(float factor) {
   SetHorizontalFov(fov / factor);
 }
 
-void PlanarPinholeCamera::Translate(Vector3 translation_vector) {
-  position = position + translation_vector;
-}
+void PlanarPinholeCamera::Translate(Vector3 translation_vector) { position = position + translation_vector; }
 
-auto PlanarPinholeCamera::Project(Vector3 point, Vector3 &projected_point)
-    -> int {
+auto PlanarPinholeCamera::Project(Vector3 point, Vector3 &projected_point) -> int {
   Matrix3x3 matrix;
   matrix.SetColumn(0, right);
   matrix.SetColumn(1, up);

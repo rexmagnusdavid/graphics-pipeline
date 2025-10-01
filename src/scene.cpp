@@ -1,10 +1,11 @@
 #include "graphics_pipeline/scene.h"
-#include "graphics_pipeline/color.h"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <cmath>
+
 #include <iostream>
+
+#include "graphics_pipeline/color.h"
 
 Scene *scene;
 constexpr int framebuffer_width = 640;
@@ -14,10 +15,9 @@ constexpr int gui_height = 300;
 
 Scene::Scene() {
   gui = new GUI(gui_width, gui_height, "GUI");
-  framebuffer =
-      new Framebuffer(framebuffer_width, framebuffer_height, "SW Framebuffer");
+  framebuffer = new Framebuffer(framebuffer_width, framebuffer_height, "SW Framebuffer");
   camera = new PlanarPinholeCamera(framebuffer_width, framebuffer_height, 1.0F);
-  meshes = {};
+  mesh = {};
 
   // Set up input callbacks for framebuffer window
   glfwSetWindowUserPointer(framebuffer->window, this);
@@ -77,9 +77,7 @@ void Scene::DrawCircle() {
 
   int center_u = framebuffer->width / 2;
   int center_v = framebuffer->height / 2;
-  int radius = framebuffer->width > framebuffer->height
-                   ? framebuffer->height / 4
-                   : framebuffer->width / 4;
+  int radius = framebuffer->width > framebuffer->height ? framebuffer->height / 4 : framebuffer->width / 4;
 
   // Midpoint circle algorithm
   int x = radius;
@@ -124,7 +122,7 @@ void Scene::DrawLine() {
   Vector3 point1(u1, v1, 0);
   Vector3 point2(u2, v2, 0);
 
-  framebuffer->Draw2DSegment(point1, point2, Color::BLACK);
+  framebuffer->DrawSegment(point1, point2, Color::BLACK);
   framebuffer->Render();
 }
 
@@ -140,9 +138,9 @@ void Scene::DrawName() {
   Vector3 n1(u, v, 0);
   Vector3 n2(u, v - 100, 0);
   Vector3 n3(u + 60, v - 50, 0);
-  framebuffer->Draw2DSegment(n1, n2, Color::BLACK);
-  framebuffer->Draw2DSegment(n1, n3, Color::BLACK);
-  framebuffer->Draw2DSegment(n2, n3, Color::BLACK);
+  framebuffer->DrawSegment(n1, n2, Color::BLACK);
+  framebuffer->DrawSegment(n1, n3, Color::BLACK);
+  framebuffer->DrawSegment(n2, n3, Color::BLACK);
   u += 100;
 
   // Draw 'A'
@@ -151,17 +149,17 @@ void Scene::DrawName() {
   Vector3 a3(u + 80, v, 0);
   Vector3 a4(u + 20, v - 50, 0);
   Vector3 a5(u + 60, v - 50, 0);
-  framebuffer->Draw2DSegment(a1, a2, Color::BLACK);
-  framebuffer->Draw2DSegment(a2, a3, Color::BLACK);
-  framebuffer->Draw2DSegment(a4, a5, Color::BLACK);
+  framebuffer->DrawSegment(a1, a2, Color::BLACK);
+  framebuffer->DrawSegment(a2, a3, Color::BLACK);
+  framebuffer->DrawSegment(a4, a5, Color::BLACK);
   u += 100;
 
   // Draw 'V'
   Vector3 v1(u, v - 100, 0);
   Vector3 v2(u + 40, v, 0);
   Vector3 v3(u + 80, v - 100, 0);
-  framebuffer->Draw2DSegment(v1, v2, Color::BLACK);
-  framebuffer->Draw2DSegment(v2, v3, Color::BLACK);
+  framebuffer->DrawSegment(v1, v2, Color::BLACK);
+  framebuffer->DrawSegment(v2, v3, Color::BLACK);
 
   framebuffer->Render();
 }
@@ -188,9 +186,9 @@ void Scene::AnimateName() {
     Vector3 n1(startX, 200, 0);
     Vector3 n2(startX, 100, 0);
     Vector3 n3(startX + 60, 150, 0);
-    framebuffer->Draw2DSegment(n1, n2, Color::BLACK);
-    framebuffer->Draw2DSegment(n1, n3, Color::BLACK);
-    framebuffer->Draw2DSegment(n2, n3, Color::BLACK);
+    framebuffer->DrawSegment(n1, n2, Color::BLACK);
+    framebuffer->DrawSegment(n1, n3, Color::BLACK);
+    framebuffer->DrawSegment(n2, n3, Color::BLACK);
 
     // Draw 'A'
     Vector3 a1(startX + 100, 200, 0);
@@ -198,16 +196,16 @@ void Scene::AnimateName() {
     Vector3 a3(startX + 180, 200, 0);
     Vector3 a4(startX + 120, 150, 0);
     Vector3 a5(startX + 160, 150, 0);
-    framebuffer->Draw2DSegment(a1, a2, Color::BLACK);
-    framebuffer->Draw2DSegment(a2, a3, Color::BLACK);
-    framebuffer->Draw2DSegment(a4, a5, Color::BLACK);
+    framebuffer->DrawSegment(a1, a2, Color::BLACK);
+    framebuffer->DrawSegment(a2, a3, Color::BLACK);
+    framebuffer->DrawSegment(a4, a5, Color::BLACK);
 
     // Draw 'V'
     Vector3 v1(startX + 200, 100, 0);
     Vector3 v2(startX + 240, 200, 0);
     Vector3 v3(startX + 280, 100, 0);
-    framebuffer->Draw2DSegment(v1, v2, Color::BLACK);
-    framebuffer->Draw2DSegment(v2, v3, Color::BLACK);
+    framebuffer->DrawSegment(v1, v2, Color::BLACK);
+    framebuffer->DrawSegment(v2, v3, Color::BLACK);
 
     framebuffer->Render();
     glfwPollEvents();
@@ -237,8 +235,7 @@ void Scene::DrawRotationGraph() {
 
   // Rotate 360 times with 2 degree increments (180 steps for 360 degrees)
   constexpr int num_steps = 180;
-  constexpr float angle_increment =
-      2.0F * M_PI / 180.0F; // 2 degrees in radians
+  constexpr float angle_increment = 2.0F * 3.14F / 180.0F; // 2 degrees in radians
 
   std::vector<Vector3> rotated_points;
   rotated_points.reserve(num_steps);
@@ -282,15 +279,15 @@ void Scene::DrawRotationGraph() {
   Vector3 x_axis_end(margin + graph_width, framebuffer->height - margin, 0);
   Vector3 y_axis_end(margin, framebuffer->height - margin - graph_height, 0);
 
-  framebuffer->Draw2DSegment(origin, x_axis_end, Color::BLACK);
-  framebuffer->Draw2DSegment(origin, y_axis_end, Color::BLACK);
+  framebuffer->DrawSegment(origin, x_axis_end, Color::BLACK);
+  framebuffer->DrawSegment(origin, y_axis_end, Color::BLACK);
 
   // Draw grid lines and labels
   for (int i = 0; i <= 4; i++) {
     int y_pos = framebuffer->height - margin - (i * graph_height / 4);
     Vector3 grid_start(margin, y_pos, 0);
     Vector3 grid_end(margin + graph_width, y_pos, 0);
-    framebuffer->Draw2DSegment(grid_start, grid_end, 0xE0E0E0FF); // Light gray
+    framebuffer->DrawSegment(grid_start, grid_end, 0xE0E0E0FF); // Light gray
   }
 
   // Plot the three curves
@@ -301,10 +298,8 @@ void Scene::DrawRotationGraph() {
       int x2 = margin + ((i + 1) * graph_width / num_steps);
 
       // Map coordinate value to y coordinate
-      float val1 =
-          (rotated_points[i].coordinates[coord_index] - data_min) / data_range;
-      float val2 = (rotated_points[i + 1].coordinates[coord_index] - data_min) /
-                   data_range;
+      float val1 = (rotated_points[i].coordinates[coord_index] - data_min) / data_range;
+      float val2 = (rotated_points[i + 1].coordinates[coord_index] - data_min) / data_range;
 
       int y1 = framebuffer->height - margin - (int)(val1 * graph_height);
       int y2 = framebuffer->height - margin - (int)(val2 * graph_height);
@@ -312,7 +307,7 @@ void Scene::DrawRotationGraph() {
       Vector3 p1(x1, y1, 0);
       Vector3 p2(x2, y2, 0);
 
-      framebuffer->Draw2DSegment(p1, p2, color);
+      framebuffer->DrawSegment(p1, p2, color);
     }
   };
 
@@ -332,27 +327,24 @@ void Scene::DrawRotationGraph() {
 
   Vector3 legend_x_start(legend_x, legend_y, 0);
   Vector3 legend_x_end(legend_x + 30, legend_y, 0);
-  framebuffer->Draw2DSegment(legend_x_start, legend_x_end, Color::RED);
+  framebuffer->DrawSegment(legend_x_start, legend_x_end, Color::RED);
 
   Vector3 legend_y_start(legend_x, legend_y + legend_spacing, 0);
   Vector3 legend_y_end(legend_x + 30, legend_y + legend_spacing, 0);
-  framebuffer->Draw2DSegment(legend_y_start, legend_y_end, Color::GREEN);
+  framebuffer->DrawSegment(legend_y_start, legend_y_end, Color::GREEN);
 
   Vector3 legend_z_start(legend_x, legend_y + 2 * legend_spacing, 0);
   Vector3 legend_z_end(legend_x + 30, legend_y + 2 * legend_spacing, 0);
-  framebuffer->Draw2DSegment(legend_z_start, legend_z_end, Color::BLUE);
+  framebuffer->DrawSegment(legend_z_start, legend_z_end, Color::BLUE);
 
   framebuffer->Render();
 
-  std::cout << "Graph complete. Point: (" << point[0] << ", " << point[1]
-            << ", " << point[2] << ")" << std::endl;
-  std::cout << "Axis origin: (" << axis_origin[0] << ", " << axis_origin[1]
-            << ", " << axis_origin[2] << ")" << std::endl;
-  std::cout << "Axis direction: (" << axis_direction[0] << ", "
-            << axis_direction[1] << ", " << axis_direction[2] << ")"
+  std::cout << "Graph complete. Point: (" << point[0] << ", " << point[1] << ", " << point[2] << ")" << std::endl;
+  std::cout << "Axis origin: (" << axis_origin[0] << ", " << axis_origin[1] << ", " << axis_origin[2] << ")"
             << std::endl;
-  std::cout << "Red = X coordinate, Green = Y coordinate, Blue = Z coordinate"
+  std::cout << "Axis direction: (" << axis_direction[0] << ", " << axis_direction[1] << ", " << axis_direction[2] << ")"
             << std::endl;
+  std::cout << "Red = X coordinate, Green = Y coordinate, Blue = Z coordinate" << std::endl;
 }
 
 void Scene::SaveTiff() {
@@ -363,8 +355,7 @@ void Scene::SaveTiff() {
 
 void Scene::Run() {
   // Main loop
-  while (!glfwWindowShouldClose(framebuffer->window) &&
-         !glfwWindowShouldClose(gui->window)) {
+  while (!glfwWindowShouldClose(framebuffer->window) && !glfwWindowShouldClose(gui->window)) {
 
     // Render GUI
     glfwMakeContextCurrent(gui->window);
@@ -383,24 +374,21 @@ void Scene::Run() {
 }
 
 // Static callback functions that forward to instance methods
-void Scene::KeyCallback(GLFWwindow *window, int key, int scancode, int action,
-                        int mods) {
+void Scene::KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
   Scene *scene = static_cast<Scene *>(glfwGetWindowUserPointer(window));
   if (scene) {
     scene->HandleKeyInput(key, action, mods);
   }
 }
 
-void Scene::MouseButtonCallback(GLFWwindow *window, int button, int action,
-                                int mods) {
+void Scene::MouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
   Scene *scene = static_cast<Scene *>(glfwGetWindowUserPointer(window));
   if (scene) {
     scene->HandleMouseButton(button, action, mods);
   }
 }
 
-void Scene::CursorPositionCallback(GLFWwindow *window, double xpos,
-                                   double ypos) {
+void Scene::CursorPositionCallback(GLFWwindow *window, double xpos, double ypos) {
   Scene *scene = static_cast<Scene *>(glfwGetWindowUserPointer(window));
   if (scene) {
     scene->HandleCursorPosition(xpos, ypos);
@@ -521,14 +509,11 @@ void Scene::HandleMouseButton(int button, int action, int mods) {
     glfwGetCursorPos(framebuffer->window, &xpos, &ypos);
 
     if (button == GLFW_MOUSE_BUTTON_LEFT) {
-      std::cout << "Left click at (" << xpos << ", " << ypos << ")"
-                << std::endl;
+      std::cout << "Left click at (" << xpos << ", " << ypos << ")" << std::endl;
     } else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-      std::cout << "Right click at (" << xpos << ", " << ypos << ")"
-                << std::endl;
+      std::cout << "Right click at (" << xpos << ", " << ypos << ")" << std::endl;
     } else if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
-      std::cout << "Middle click at (" << xpos << ", " << ypos << ")"
-                << std::endl;
+      std::cout << "Middle click at (" << xpos << ", " << ypos << ")" << std::endl;
     }
   }
 }

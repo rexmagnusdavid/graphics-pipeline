@@ -20,6 +20,8 @@ Framebuffer::Framebuffer(int _width, int _height, const char *title) {
 Framebuffer::~Framebuffer() { glfwDestroyWindow(window); }
 
 void Framebuffer::Render() {
+  glfwMakeContextCurrent(window);
+
   glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
 
   glfwSwapBuffers(window);
@@ -67,8 +69,7 @@ void Framebuffer::SaveTiff(char *file_name) {
   TIFFSetField(output, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
   TIFFSetField(output, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
   for (int row = 0; row < (unsigned int)height; row++) {
-    TIFFWriteScanline(
-        output, &pixels[(static_cast<long>(height - row - 1)) * width], row);
+    TIFFWriteScanline(output, &pixels[(static_cast<long>(height - row - 1)) * width], row);
   }
 
   TIFFClose(output);
@@ -78,10 +79,8 @@ auto Framebuffer::GetPixel(int u_coordinate, int v_coordinate) -> unsigned int {
   return pixels[((height - 1 - v_coordinate) * width) + u_coordinate];
 }
 
-void Framebuffer::SetPixel(int u_coordinate, int v_coordinate,
-                           unsigned int color) {
-  if (u_coordinate < 0 || u_coordinate > width - 1 || v_coordinate < 0 ||
-      v_coordinate > height - 1) {
+void Framebuffer::SetPixel(int u_coordinate, int v_coordinate, unsigned int color) {
+  if (u_coordinate < 0 || u_coordinate > width - 1 || v_coordinate < 0 || v_coordinate > height - 1) {
     return;
   }
 
@@ -94,8 +93,7 @@ void Framebuffer::FillBackground(unsigned int color) {
   }
 }
 
-void Framebuffer::FillCheckboard(int size, unsigned int color_0,
-                                 unsigned int color_1) {
+void Framebuffer::FillCheckboard(unsigned int color_0, unsigned int color_1, int size) {
   for (int v_coordinate = 0; v_coordinate < height; v_coordinate++) {
     for (int u_coordinate = 0; u_coordinate < width; u_coordinate++) {
       int color_u = u_coordinate / size;
@@ -110,85 +108,37 @@ void Framebuffer::FillCheckboard(int size, unsigned int color_0,
   }
 }
 
-void Framebuffer::Draw2DPoint(Vector3 point, int size, unsigned int color) {
-  int u_point = (int)point[0];
-  int v_point = (int)point[1];
+void Framebuffer::DrawPoint(Vector3 point, unsigned int color, int size) {
+  int u_point = (int)point.coordinates[0];
+  int v_point = (int)point.coordinates[1];
 
-  for (int v_coordinate = v_point - (size / 2);
-       v_coordinate < v_point + size / 2; v_coordinate++) {
-    for (int u_coordinate = u_point - (size / 2);
-         u_coordinate < u_point + size / 2; u_coordinate++) {
+  for (int v_coordinate = v_point - (size / 2); v_coordinate < v_point + size / 2; v_coordinate++) {
+    for (int u_coordinate = u_point - (size / 2); u_coordinate < u_point + size / 2; u_coordinate++) {
       SetPixel(u_coordinate, v_coordinate, color);
     }
   }
 }
 
-void Framebuffer::Draw2DSegment(Vector3 point_0, Vector3 point_1,
-                                unsigned int color_0) {
-  point_0[2] = 0.0F;
-  point_1[2] = 0.0F;
+void Framebuffer::DrawSegment(Vector3 point_0, Vector3 point_1, unsigned int color) {
+  point_0.coordinates[2] = 0.0F;
+  point_1.coordinates[2] = 0.0F;
 
   int pixn = (int)((point_1 - point_0).GetMagnitude() + 2);
   for (int si = 0; si < pixn; si++) {
-    Vector3 currP =
-        point_0 + (point_1 - point_0) * (float)si / (float)(pixn - 1);
-    SetPixel((int)currP[0], (int)currP[1], color_0);
+    Vector3 currP = point_0 + (point_1 - point_0) * (float)si / (float)(pixn - 1);
+    SetPixel((int)currP.coordinates[0], (int)currP.coordinates[1], color);
   }
 }
 
-void Framebuffer::Draw2DSegment(Vector3 point_0, Vector3 point_1,
-                                Vector3 color_0, Vector3 color_1) {
-  point_0[2] = 0.0F;
-  point_1[2] = 0.0F;
+void Framebuffer::DrawSegment(Vector3 point_0, Vector3 point_1, Vector3 color_0, Vector3 color_1) {
+  point_0.coordinates[2] = 0.0F;
+  point_1.coordinates[2] = 0.0F;
 
   int pixn = (int)((point_1 - point_0).GetMagnitude() + 2);
   for (int si = 0; si < pixn; si++) {
-    Vector3 currP =
-        point_0 + (point_1 - point_0) * (float)si / (float)(pixn - 1);
-    Vector3 currC =
-        color_0 + (color_1 - color_0) * (float)si / (float)(pixn - 1);
+    Vector3 currP = point_0 + (point_1 - point_0) * (float)si / (float)(pixn - 1);
+    Vector3 currC = color_0 + (color_1 - color_0) * (float)si / (float)(pixn - 1);
     unsigned int color = currC.GetColor();
-    SetPixel((int)currP[0], (int)currP[1], color);
+    SetPixel((int)currP.coordinates[0], (int)currP.coordinates[1], color);
   }
-}
-
-void Framebuffer::Draw3DPoint(PlanarPinholeCamera *camera, Vector3 point,
-                              int size, unsigned int color) {
-  Vector3 projected_point;
-  if (camera->Project(point, projected_point) == 0) {
-    return;
-  }
-
-  Draw2DPoint(projected_point, size, color);
-}
-
-void Framebuffer::Draw3DSegment(PlanarPinholeCamera *camera, Vector3 point_0,
-                                Vector3 point_1, unsigned int color_0) {
-  Vector3 projected_point_0;
-  if (camera->Project(point_0, projected_point_0) == 0) {
-    return;
-  }
-
-  Vector3 projected_point_1;
-  if (camera->Project(point_1, projected_point_1) == 0) {
-    return;
-  }
-
-  Draw2DSegment(projected_point_0, projected_point_1, color_0);
-}
-
-void Framebuffer::Draw3DSegment(PlanarPinholeCamera *camera, Vector3 point_0,
-                                Vector3 point_1, Vector3 color_0,
-                                Vector3 color_1) {
-  Vector3 projected_point_0;
-  if (camera->Project(point_0, projected_point_0) == 0) {
-    return;
-  }
-
-  Vector3 projected_point_1;
-  if (camera->Project(point_1, projected_point_1) == 0) {
-    return;
-  }
-
-  Draw2DSegment(projected_point_0, projected_point_1, color_0, color_1);
 }

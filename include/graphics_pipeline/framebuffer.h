@@ -4,7 +4,6 @@
 #include <GLFW/glfw3.h>
 #include <vector>
 
-#include "planar_pinhole_camera.h"
 #include "vector_3.h"
 
 class Framebuffer {
@@ -24,17 +23,9 @@ public:
   void SetPixel(int u_coordinate, int v_coordinate, unsigned int color);
 
   void FillBackground(unsigned int color);
-  void FillCheckboard(int size, unsigned int color_0, unsigned int color_1);
+  void FillCheckboard(unsigned int color_0, unsigned int color_1, int size);
 
-  void Draw2DPoint(Vector3 point, int size, unsigned int color);
-  void Draw2DSegment(Vector3 point_0, Vector3 point_1, unsigned int color);
-  void Draw2DSegment(Vector3 point_0, Vector3 point_1, Vector3 color_0,
-                     Vector3 color_1);
-
-  void Draw3DPoint(PlanarPinholeCamera *camera, Vector3 point, int size,
-                   unsigned int color);
-  void Draw3DSegment(PlanarPinholeCamera *camera, Vector3 point_0,
-                     Vector3 point_1, unsigned int color);
-  void Draw3DSegment(PlanarPinholeCamera *camera, Vector3 point_0,
-                     Vector3 point_1, Vector3 color_0, Vector3 color_1);
+  void DrawPoint(Vector3 point, unsigned int color, int size);
+  void DrawSegment(Vector3 point_0, Vector3 point_1, unsigned int color);
+  void DrawSegment(Vector3 point_0, Vector3 point_1, Vector3 color_0, Vector3 color_1);
 };

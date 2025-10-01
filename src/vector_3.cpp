@@ -63,9 +63,7 @@ auto Vector3::operator/(float right) -> Vector3 {
 
 auto Vector3::GetMagnitude() -> float { return sqrtf((*this).Dot((*this))); }
 
-auto Vector3::GetNormal() -> Vector3 {
-  return (*this) / (*this).GetMagnitude();
-}
+auto Vector3::GetNormal() -> Vector3 { return (*this) / (*this).GetMagnitude(); }
 
 auto Vector3::Cross(Vector3 with) -> Vector3 {
   Vector3 ret;
@@ -80,14 +78,12 @@ auto Vector3::Cross(Vector3 with) -> Vector3 {
 auto Vector3::Dot(Vector3 with) -> float {
   float ret = NAN;
 
-  ret = coordinates[0] * with[0] + coordinates[1] * with[1] +
-        coordinates[2] * with[2];
+  ret = coordinates[0] * with[0] + coordinates[1] * with[1] + coordinates[2] * with[2];
 
   return ret;
 }
 
-auto Vector3::RotateAboutAxis(Vector3 origin, Vector3 direction, float angle)
-    -> Vector3 {
+auto Vector3::RotateAboutAxis(Vector3 origin, Vector3 direction, float angle) -> Vector3 {
   Vector3 ret;
 
   Matrix3x3 local_coordinate_system;
@@ -106,12 +102,10 @@ auto Vector3::RotateAboutAxis(Vector3 origin, Vector3 direction, float angle)
 
   Vector3 point_in_local_space = local_coordinate_system * ((*this) - origin);
 
-  Matrix3x3 y_axis_rotation_matrix = Matrix3x3::RotateAboutY(angle);
-  Vector3 rotated_point_in_local_space =
-      y_axis_rotation_matrix * point_in_local_space;
+  Matrix3x3 y_axis_rotation_matrix = Matrix3x3::RotationAboutY(angle);
+  Vector3 rotated_point_in_local_space = y_axis_rotation_matrix * point_in_local_space;
 
-  ret = local_coordinate_system.GetInverse() * rotated_point_in_local_space +
-        origin;
+  ret = local_coordinate_system.GetInverse() * rotated_point_in_local_space + origin;
 
   return ret;
 }
@@ -123,8 +117,7 @@ auto Vector3::GetColor() -> unsigned int {
   for (int channel_index = 0; channel_index < 3; ++channel_index) {
     float component_value = (*this)[channel_index];
     component_value = std::clamp(component_value, 0.0F, 1.0F);
-    rgb[channel_index] = static_cast<unsigned char>(
-        std::lround(component_value * Color::MIN_ALPHA_CHANNEL));
+    rgb[channel_index] = static_cast<unsigned char>(std::lround(component_value * Color::MIN_ALPHA_CHANNEL));
   }
 
   const auto alpha_channel = Color::BLACK;
