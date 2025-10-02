@@ -77,46 +77,46 @@ void PlanarPinholeCamera::Zoom(float factor) {
 void PlanarPinholeCamera::Translate(Vector3 translation_vector) { position = position + translation_vector; }
 
 void PlanarPinholeCamera::Pose(Vector3 new_position, Vector3 look_at_point, Vector3 up_vector) {
+  constexpr float HALF_DIMENSION = 0.5F;
 
-  Vector3 newa;
-  Vector3 newb;
-  Vector3 newc;
+  Vector3 new_view_direction = (look_at_point - new_position).GetNormal();
+  Vector3 new_right = (new_view_direction.Cross(up_vector)).GetNormal();
+  Vector3 new_up = (new_view_direction.Cross(new_right)).GetNormal();
+  Vector3 new_forward = new_view_direction * GetFocalLength() - new_right * ((float)width * HALF_DIMENSION) -
+                        new_up * ((float)height * HALF_DIMENSION);
 
-  Vector3 newvd = (look_at_point - new_position).GetNormal();
-  newa = (newvd.Cross(up_vector)).GetNormal();
-  newb = (newvd.Cross(newa)).GetNormal();
-  float focal_length = GetFocalLength();
-
-  newc = newvd * focal_length - newa * ((float)width / (float)2) - newb * ((float)height / (float)2);
-
-  right = newa;
-  up = newb;
-  forward = newc;
+  right = new_right;
+  up = new_up;
+  forward = new_forward;
   position = new_position;
 }
 
 auto PlanarPinholeCamera::Project(Vector3 point, Vector3 &projected_point) -> int {
-  Matrix3x3 matrix;
-  matrix.SetColumn(0, right);
-  matrix.SetColumn(1, up);
-  matrix.SetColumn(2, forward);
+  Matrix3x3 camera_matrix;
+  camera_matrix.SetColumn(0, right);
+  camera_matrix.SetColumn(1, up);
+  camera_matrix.SetColumn(2, forward);
 
-  Vector3 q_var = matrix.GetInverse() * (point - position);
+  Vector3 camera_space_point = camera_matrix.GetInverse() * (point - position);
 
-  if (q_var[2] <= 0.0F) {
+  if (camera_space_point[2] <= 0.0F) {
     return 0;
   }
 
-  projected_point[0] = q_var[0] / q_var[2];
-  projected_point[1] = q_var[1] / q_var[2];
-  projected_point[2] = 1.0F / q_var[2];
+  projected_point[0] = camera_space_point[0] / camera_space_point[2];
+  projected_point[1] = camera_space_point[1] / camera_space_point[2];
+  projected_point[2] = 1.0F / camera_space_point[2];
 
   return 1;
 }
 
 auto PlanarPinholeCamera::Unproject(int u_coordinate, int v_coordinate, float inverse_depth) -> Vector3 {
-  Vector3 ret = position + (right * (0.5F + (float)u_coordinate) + up * (0.5F + (float)v_coordinate) + forward) *
-                               (1.0F / inverse_depth);
+  Vector3 ret;
+
+  constexpr float PIXEL_CENTER_OFFSET = 0.5F;
+  ret = position + (right * (PIXEL_CENTER_OFFSET + (float)u_coordinate) +
+                    up * (PIXEL_CENTER_OFFSET + (float)v_coordinate) + forward) *
+                       (1.0F / inverse_depth);
   return ret;
 }
 

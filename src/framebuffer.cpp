@@ -27,6 +27,14 @@ void Framebuffer::Render() {
   glfwSwapBuffers(window);
 }
 
+void Framebuffer::Resize(int _width, int _height) {
+  width = _width;
+  height = _height;
+  pixels.clear();
+  pixels.resize(static_cast<long>(width) * height);
+  glfwSetWindowSize(window, width, height);
+}
+
 void Framebuffer::LoadTiff(char *file_name) {
   TIFF *input = TIFFOpen(file_name, "r");
   if (input == nullptr) {
@@ -38,16 +46,9 @@ void Framebuffer::LoadTiff(char *file_name) {
   int _height;
   TIFFGetField(input, TIFFTAG_IMAGEWIDTH, &_width);
   TIFFGetField(input, TIFFTAG_IMAGELENGTH, &_height);
+  Resize(_width, _height);
+  TIFFReadRGBAImage(input, width, height, pixels.data(), 0);
 
-  width = _width;
-  height = _height;
-  pixels.clear();
-  pixels.resize(static_cast<long>(width) * height);
-  glfwSetWindowSize(window, width, height);
-
-  if (TIFFReadRGBAImage(input, width, height, pixels.data(), 0) == 0) {
-    std::cerr << "failed to load " << file_name << '\n';
-  }
   TIFFClose(input);
 }
 
@@ -60,7 +61,6 @@ void Framebuffer::SaveTiff(char *file_name) {
 
   constexpr int SAMPLES_PER_PIXEL = 4;
   constexpr int BITS_PER_CHANNEL = 8;
-
   TIFFSetField(output, TIFFTAG_IMAGEWIDTH, width);
   TIFFSetField(output, TIFFTAG_IMAGELENGTH, height);
   TIFFSetField(output, TIFFTAG_SAMPLESPERPIXEL, SAMPLES_PER_PIXEL);
@@ -88,31 +88,31 @@ void Framebuffer::SetPixel(int u_coordinate, int v_coordinate, unsigned int colo
 }
 
 void Framebuffer::FillBackground(unsigned int color) {
-  for (int uv = 0; uv < width * height; uv++) {
-    pixels[uv] = color;
+  for (int i = 0; i < width * height; i++) {
+    pixels[i] = color;
   }
 }
 
-void Framebuffer::DrawSegment(Vector3 point_0, Vector3 point_1, unsigned int color) {
-  point_0.coordinates[2] = 0.0F;
-  point_1.coordinates[2] = 0.0F;
+void Framebuffer::DrawSegment(Vector3 start_point, Vector3 end_point, unsigned int color) {
+  start_point[2] = 0.0F;
+  end_point[2] = 0.0F;
 
-  int pixn = (int)((point_1 - point_0).GetMagnitude() + 2);
-  for (int si = 0; si < pixn; si++) {
-    Vector3 currP = point_0 + (point_1 - point_0) * (float)si / (float)(pixn - 1);
-    SetPixel((int)currP.coordinates[0], (int)currP.coordinates[1], color);
+  int number_of_pixels = (int)((end_point - start_point).GetMagnitude() + 2);
+  for (int i = 0; i < number_of_pixels; i++) {
+    Vector3 current_point = start_point + (end_point - start_point) * (float)i / (float)(number_of_pixels - 1);
+    SetPixel((int)current_point[0], (int)current_point[1], color);
   }
 }
 
-void Framebuffer::DrawSegment(Vector3 point_0, Vector3 point_1, Vector3 color_0, Vector3 color_1) {
-  point_0.coordinates[2] = 0.0F;
-  point_1.coordinates[2] = 0.0F;
+void Framebuffer::DrawSegment(Vector3 start_point, Vector3 end_point, Vector3 start_color, Vector3 end_color) {
+  start_point[2] = 0.0F;
+  end_point[2] = 0.0F;
 
-  int pixn = (int)((point_1 - point_0).GetMagnitude() + 2);
-  for (int si = 0; si < pixn; si++) {
-    Vector3 currP = point_0 + (point_1 - point_0) * (float)si / (float)(pixn - 1);
-    Vector3 currC = color_0 + (color_1 - color_0) * (float)si / (float)(pixn - 1);
-    unsigned int color = currC.GetColor();
-    SetPixel((int)currP.coordinates[0], (int)currP.coordinates[1], color);
+  int number_of_pixels = (int)((end_point - start_point).GetMagnitude() + 2);
+  for (int i = 0; i < number_of_pixels; i++) {
+    Vector3 current_point = start_point + (end_point - start_point) * (float)i / (float)(number_of_pixels - 1);
+    Vector3 current_color = start_color + (end_color - start_color) * (float)i / (float)(number_of_pixels - 1);
+    unsigned int color = current_color.GetColor();
+    SetPixel((int)current_point[0], (int)current_point[1], color);
   }
 }

@@ -25,7 +25,7 @@ public:
   void LightDirection(Vector3 light_direction, float ambient_coefficient);
   void LightPoint(Vector3 light_point, float ambient_coefficient);
 
-  static auto AxisAlignedBox(Vector3 corner_0, Vector3 corner_1, unsigned int color) -> TriangleMesh;
+  static auto AxisAlignedBox(Vector3 min_corner, Vector3 max_corner, unsigned int color) -> TriangleMesh;
   static auto Sphere(Vector3 position, float radius, int subdivisions, unsigned int color) -> TriangleMesh;
   static auto Cylinder(Vector3 position, float radius, float height, int subdivisions, unsigned int color)
       -> TriangleMesh;

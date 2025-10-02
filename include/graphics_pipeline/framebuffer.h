@@ -15,6 +15,7 @@ public:
   ~Framebuffer();
 
   void Render();
+  void Resize(int _width, int _height);
 
   void LoadTiff(char *file_name);
   void SaveTiff(char *file_name);
@@ -23,6 +24,6 @@ public:
   void SetPixel(int u_coordinate, int v_coordinate, unsigned int color);
 
   void FillBackground(unsigned int color);
-  void DrawSegment(Vector3 point_0, Vector3 point_1, unsigned int color);
-  void DrawSegment(Vector3 point_0, Vector3 point_1, Vector3 color_0, Vector3 color_1);
+  void DrawSegment(Vector3 start_point, Vector3 end_point, unsigned int color);
+  void DrawSegment(Vector3 start_point, Vector3 end_point, Vector3 start_color, Vector3 end_color);
 };

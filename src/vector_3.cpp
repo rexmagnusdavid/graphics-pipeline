@@ -137,17 +137,23 @@ void Vector3::SetColor(unsigned int color) {
 }
 
 auto Vector3::Light(Vector3 normal, Vector3 light_direction, float ambient_coefficient) -> Vector3 {
-  Vector3 &S = *this;
-  float kd = normal.Dot(light_direction);
-  kd = (kd < 0.0F) ? 0.0F : kd;
-  Vector3 ret = S * (ambient_coefficient + ((1.0F - ambient_coefficient) * kd));
+  Vector3 ret;
+
+  Vector3 &surface_color = *this;
+  float diffuse_coefficient = normal.Dot(light_direction);
+  diffuse_coefficient = (diffuse_coefficient < 0.0F) ? 0.0F : diffuse_coefficient;
+  ret = surface_color * (ambient_coefficient + ((1.0F - ambient_coefficient) * diffuse_coefficient));
+
   return ret;
 }
 
 auto Vector3::Reflect(Vector3 light_direction) -> Vector3 {
-  Vector3 &n = *this;
-  Vector3 ln = n * (n.Dot(light_direction));
-  Vector3 lt = light_direction - ln;
-  Vector3 ret = ln - lt;
+  Vector3 ret;
+
+  Vector3 &surface_normal = *this;
+  Vector3 normal_component = surface_normal * (surface_normal.Dot(light_direction));
+  Vector3 tangent_component = light_direction - normal_component;
+  ret = normal_component - tangent_component;
+
   return ret;
 }
