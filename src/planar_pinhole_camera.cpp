@@ -124,7 +124,9 @@ auto PlanarPinholeCamera::Unproject(int u_coordinate, int v_coordinate, float in
 auto PlanarPinholeCamera::GetViewDirection() -> Vector3 { return forward; }
 
 auto PlanarPinholeCamera::GetFocalLength() -> float {
-  float ret = (static_cast<float>(width) / 2.0F) / tanf(horizontal_fov / 2.0F);
+  constexpr float HALF_WIDTH_DIVISOR = 2.0F;
+  constexpr float HALF_FOV_DIVISOR = 2.0F;
+  float ret = (static_cast<float>(width) / HALF_WIDTH_DIVISOR) / tanf(horizontal_fov / HALF_FOV_DIVISOR);
 
   return ret;
 }
