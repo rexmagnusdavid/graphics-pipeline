@@ -104,15 +104,24 @@ void TriangleMesh::RotateAboutAxis(Vector3 origin, Vector3 direction, float angl
 auto TriangleMesh::AxisAlignedBox(Vector3 corner_0, Vector3 corner_1, unsigned int color) -> TriangleMesh {
   TriangleMesh ret;
 
+  constexpr int NUM_BOX_VERTICES = 8;
+  constexpr std::array<unsigned int, 36> BOX_TRIANGLE_INDICES = {
+      0, 1, 2, 0, 2, 3, // Front face
+      1, 5, 6, 1, 6, 2, // Right face
+      5, 4, 7, 5, 7, 6, // Back face
+      4, 0, 3, 4, 3, 7, // Left face
+      3, 2, 6, 3, 6, 7, // Top face
+      4, 5, 1, 4, 1, 0  // Bottom face
+  };
+
   ret.vertices = {Vector3(corner_0[0], corner_0[1], corner_0[2]), Vector3(corner_1[0], corner_0[1], corner_0[2]),
                   Vector3(corner_1[0], corner_1[1], corner_0[2]), Vector3(corner_0[0], corner_1[1], corner_0[2]),
                   Vector3(corner_0[0], corner_0[1], corner_1[2]), Vector3(corner_1[0], corner_0[1], corner_1[2]),
                   Vector3(corner_1[0], corner_1[1], corner_1[2]), Vector3(corner_0[0], corner_1[1], corner_1[2])};
   Vector3 vertex_color;
   vertex_color.SetColor(color);
-  ret.colors.resize(8, vertex_color);
-  ret.triangles = {0, 1, 2, 0, 2, 3, 1, 5, 6, 1, 6, 2, 5, 4, 7, 5, 7, 6,
-                   4, 0, 3, 4, 3, 7, 3, 2, 6, 3, 6, 7, 4, 5, 1, 4, 1, 0};
+  ret.colors.resize(NUM_BOX_VERTICES, vertex_color);
+  ret.triangles.assign(std::begin(BOX_TRIANGLE_INDICES), std::end(BOX_TRIANGLE_INDICES));
 
   return ret;
 }
