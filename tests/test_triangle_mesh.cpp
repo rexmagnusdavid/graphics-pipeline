@@ -2,8 +2,8 @@
 
 #include <cmath>
 
-#include "triangle_mesh.h"
-#include "vector_3.h"
+#include "graphics_pipeline/triangle_mesh.h"
+#include "graphics_pipeline/vector_3.h"
 
 class TriangleMeshTest : public ::testing::Test {
 protected:

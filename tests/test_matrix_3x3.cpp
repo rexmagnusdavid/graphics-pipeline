@@ -3,8 +3,8 @@
 #include <cmath>
 #include <sstream>
 
-#include "matrix_3x3.h"
-#include "vector_3.h"
+#include "graphics_pipeline/matrix_3x3.h"
+#include "graphics_pipeline/vector_3.h"
 
 class Matrix3x3Test : public ::testing::Test {
 protected:

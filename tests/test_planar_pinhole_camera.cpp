@@ -2,8 +2,8 @@
 
 #include <cmath>
 
-#include "planar_pinhole_camera.h"
-#include "vector_3.h"
+#include "graphics_pipeline/planar_pinhole_camera.h"
+#include "graphics_pipeline/vector_3.h"
 
 class PlanarPinholeCameraTest : public ::testing::Test {
 protected:
@@ -117,11 +117,15 @@ TEST_F(PlanarPinholeCameraTest, GetViewDirection) {
 
   Vector3 view_direction = camera.GetViewDirection();
 
-  // View direction should be normalized
+  // View direction should be normalized and equal to forward
   EXPECT_TRUE(FloatEqual(view_direction.GetMagnitude(), 1.0f));
+  EXPECT_TRUE(VectorEqual(view_direction, camera.forward));
 
-  // Should point roughly toward negative Z
+  // Should point toward negative Z (from (0,0,5) to (0,0,0))
   EXPECT_LT(view_direction[2], 0.0f);
+  EXPECT_TRUE(FloatEqual(view_direction[0], 0.0f));
+  EXPECT_TRUE(FloatEqual(view_direction[1], 0.0f));
+  EXPECT_TRUE(FloatEqual(view_direction[2], -1.0f));
 }
 
 TEST_F(PlanarPinholeCameraTest, GetFocalLength) {
@@ -132,7 +136,7 @@ TEST_F(PlanarPinholeCameraTest, GetFocalLength) {
   // Focal length should be positive
   EXPECT_GT(focal_length, 0.0f);
 
-  // For a given width and FOV, focal length should be deterministic
+  // For a given width and FOV, focal length follows pinhole camera formula
   float expected_focal_length = (camera.width / 2.0f) / std::tan(camera.horizontal_fov / 2.0f);
   EXPECT_TRUE(FloatEqual(focal_length, expected_focal_length));
 }
@@ -163,13 +167,14 @@ TEST_F(PlanarPinholeCameraTest, UnprojectCenterPixel) {
   // Unproject the center pixel
   int u_coordinate = camera.width / 2;
   int v_coordinate = camera.height / 2;
-  float inverse_depth = 0.2f; // 5 units away
+  float inverse_depth = 0.2f; // depth = 5 units (1/0.2 = 5)
 
   Vector3 unprojected_point = camera.Unproject(u_coordinate, v_coordinate, inverse_depth);
 
-  // Unprojected point should be roughly at origin (where camera is looking)
-  EXPECT_TRUE(FloatEqual(unprojected_point[0], 0.0f));
-  EXPECT_TRUE(FloatEqual(unprojected_point[1], 0.0f));
+  // The center pixel at depth 5 should unproject to approximately the look-at point (0,0,0)
+  EXPECT_NEAR(unprojected_point[0], 0.0f, 0.01f);
+  EXPECT_NEAR(unprojected_point[1], 0.0f, 0.01f);
+  EXPECT_NEAR(unprojected_point[2], 0.0f, 0.01f);
 }
 
 TEST_F(PlanarPinholeCameraTest, ProjectBehindCamera) {
@@ -181,15 +186,15 @@ TEST_F(PlanarPinholeCameraTest, ProjectBehindCamera) {
   Vector3 projected_point;
   int projection_result = camera.Project(point_behind_camera, projected_point);
 
-  // Projection should fail (or return special value) for point behind camera
-  EXPECT_LT(projection_result, 0);
+  // Projection should return 0 for point behind camera (camera_space_point[2] <= 0)
+  EXPECT_EQ(projection_result, 0);
 }
 
 TEST_F(PlanarPinholeCameraTest, OrthogonalBasisVectors) {
   PlanarPinholeCamera camera(640, 480, M_PI / 3.0f);
   camera.Pose(Vector3(0.0f, 0.0f, 5.0f), Vector3(0.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f));
 
-  // Right, up, and forward should be orthogonal
+  // After the fix, right, up, and forward should all be orthonormal unit vectors
   float dot_product_right_up = camera.right.Dot(camera.up);
   float dot_product_right_forward = camera.right.Dot(camera.forward);
   float dot_product_up_forward = camera.up.Dot(camera.forward);

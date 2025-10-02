@@ -117,23 +117,23 @@ auto Vector3::GetColor() -> unsigned int {
   for (int channel_index = 0; channel_index < 3; ++channel_index) {
     float component_value = (*this)[channel_index];
     component_value = std::clamp(component_value, 0.0F, 1.0F);
-    rgb[channel_index] = static_cast<unsigned char>(std::lround(component_value * Color::MIN_ALPHA_CHANNEL));
+    rgb[channel_index] = static_cast<unsigned char>(std::lround(component_value * Color::MAX_ALPHA_CHANNEL));
   }
 
-  const auto alpha_channel = Color::BLACK;
-  const auto red_channel = static_cast<std::uint32_t>(rgb[2]) << 16;
-  const auto green_channel = static_cast<std::uint32_t>(rgb[1]) << 8;
-  const auto blue_channel = static_cast<std::uint32_t>(rgb[0]);
+  const auto red_channel = static_cast<std::uint32_t>(rgb[0]) << 24;
+  const auto green_channel = static_cast<std::uint32_t>(rgb[1]) << 16;
+  const auto blue_channel = static_cast<std::uint32_t>(rgb[2]) << 8;
+  const auto alpha_channel = 0xFF;
 
-  ret = alpha_channel | red_channel | green_channel | blue_channel;
+  ret = red_channel | green_channel | blue_channel | alpha_channel;
 
   return ret;
 }
 
 void Vector3::SetColor(unsigned int color) {
-  (*this)[0] = (float)((unsigned char *)&color)[0] / Color::MAX_ALPHA_CHANNEL;
-  (*this)[1] = (float)((unsigned char *)&color)[1] / Color::MAX_ALPHA_CHANNEL;
-  (*this)[2] = (float)((unsigned char *)&color)[2] / Color::MAX_ALPHA_CHANNEL;
+  (*this)[0] = static_cast<float>((color >> 24) & 0xFF) / Color::MAX_ALPHA_CHANNEL;
+  (*this)[1] = static_cast<float>((color >> 16) & 0xFF) / Color::MAX_ALPHA_CHANNEL;
+  (*this)[2] = static_cast<float>((color >> 8) & 0xFF) / Color::MAX_ALPHA_CHANNEL;
 }
 
 auto Vector3::Light(Vector3 normal, Vector3 light_direction, float ambient_coefficient) -> Vector3 {

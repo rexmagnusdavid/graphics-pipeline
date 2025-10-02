@@ -1,6 +1,7 @@
 #include "graphics_pipeline/planar_pinhole_camera.h"
 
 #include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 
@@ -77,13 +78,9 @@ void PlanarPinholeCamera::Zoom(float factor) {
 void PlanarPinholeCamera::Translate(Vector3 translation_vector) { position = position + translation_vector; }
 
 void PlanarPinholeCamera::Pose(Vector3 new_position, Vector3 look_at_point, Vector3 up_vector) {
-  constexpr float HALF_DIMENSION = 0.5F;
-
-  Vector3 new_view_direction = (look_at_point - new_position).GetNormal();
-  Vector3 new_right = (new_view_direction.Cross(up_vector)).GetNormal();
-  Vector3 new_up = (new_view_direction.Cross(new_right)).GetNormal();
-  Vector3 new_forward = new_view_direction * GetFocalLength() - new_right * ((float)width * HALF_DIMENSION) -
-                        new_up * ((float)height * HALF_DIMENSION);
+  Vector3 new_forward = (look_at_point - new_position).GetNormal();
+  Vector3 new_right = (new_forward.Cross(up_vector)).GetNormal();
+  Vector3 new_up = (new_right.Cross(new_forward)).GetNormal();
 
   right = new_right;
   up = new_up;
@@ -113,23 +110,21 @@ auto PlanarPinholeCamera::Project(Vector3 point, Vector3 &projected_point) -> in
 auto PlanarPinholeCamera::Unproject(int u_coordinate, int v_coordinate, float inverse_depth) -> Vector3 {
   Vector3 ret;
 
-  constexpr float PIXEL_CENTER_OFFSET = 0.5F;
-  ret = position + (right * (PIXEL_CENTER_OFFSET + (float)u_coordinate) +
-                    up * (PIXEL_CENTER_OFFSET + (float)v_coordinate) + forward) *
-                       (1.0F / inverse_depth);
-  return ret;
-}
+  constexpr float HALF_DIMENSION = 0.5F;
+  float x_camera = (static_cast<float>(u_coordinate) + HALF_DIMENSION - (static_cast<float>(width) * HALF_DIMENSION));
+  float y_camera = (static_cast<float>(v_coordinate) + HALF_DIMENSION - (static_cast<float>(height) * HALF_DIMENSION));
+  float z_camera = GetFocalLength();
 
-auto PlanarPinholeCamera::GetViewDirection() -> Vector3 {
-  Vector3 ret = (right.Cross(up)).GetNormal();
+  float depth = 1.0F / inverse_depth;
+  ret = position + (right * x_camera + up * y_camera + forward * z_camera) * (depth / GetFocalLength());
 
   return ret;
 }
+
+auto PlanarPinholeCamera::GetViewDirection() -> Vector3 { return forward; }
 
 auto PlanarPinholeCamera::GetFocalLength() -> float {
-  float ret;
-  Vector3 view_direction = GetViewDirection();
-  ret = view_direction.Dot(forward);
+  float ret = (static_cast<float>(width) / 2.0F) / tanf(horizontal_fov / 2.0F);
 
   return ret;
 }

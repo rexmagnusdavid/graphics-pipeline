@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+option(BUILD_TESTS "Build the tests" OFF)
+
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(glfw3 REQUIRED)
@@ -33,3 +35,23 @@ target_link_libraries(renderer PRIVATE
     glfw
     ${TIFF_LIBRARIES}
 )
+
+if(BUILD_TESTS)
+  find_package(GTest REQUIRED)
+  enable_testing()
+
+  add_executable(run_tests
+    tests/test_vector_3.cpp
+    tests/test_matrix_3x3.cpp
+    tests/test_planar_pinhole_camera.cpp
+    src/vector_3.cpp
+    src/matrix_3x3.cpp
+    src/planar_pinhole_camera.cpp
+  )
+
+  target_include_directories(run_tests PRIVATE include)
+
+  target_link_libraries(run_tests PRIVATE GTest::GTest GTest::Main)
+
+  add_test(NAME run_tests COMMAND run_tests)
+endif()
