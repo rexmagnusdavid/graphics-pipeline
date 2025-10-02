@@ -1,6 +1,6 @@
 #include "graphics_pipeline/triangle_mesh.h"
+#include "graphics_pipeline/vector_3.h"
 
-#include <cmath>
 #include <fstream>
 
 void TriangleMesh::LoadBinary(char *file_name) {
@@ -101,126 +101,17 @@ void TriangleMesh::RotateAboutAxis(Vector3 origin, Vector3 direction, float angl
   }
 }
 
-auto TriangleMesh::AxisAlignedBox(Vector3 corner_0, Vector3 corner_1, unsigned int color) -> TriangleMesh {
-  TriangleMesh ret;
-
-  constexpr int NUM_BOX_VERTICES = 8;
-  constexpr std::array<unsigned int, 36> BOX_TRIANGLE_INDICES = {
-      0, 1, 2, 0, 2, 3, // Front face
-      1, 5, 6, 1, 6, 2, // Right face
-      5, 4, 7, 5, 7, 6, // Back face
-      4, 0, 3, 4, 3, 7, // Left face
-      3, 2, 6, 3, 6, 7, // Top face
-      4, 5, 1, 4, 1, 0  // Bottom face
-  };
-
-  ret.vertices = {Vector3(corner_0[0], corner_0[1], corner_0[2]), Vector3(corner_1[0], corner_0[1], corner_0[2]),
-                  Vector3(corner_1[0], corner_1[1], corner_0[2]), Vector3(corner_0[0], corner_1[1], corner_0[2]),
-                  Vector3(corner_0[0], corner_0[1], corner_1[2]), Vector3(corner_1[0], corner_0[1], corner_1[2]),
-                  Vector3(corner_1[0], corner_1[1], corner_1[2]), Vector3(corner_0[0], corner_1[1], corner_1[2])};
-  Vector3 vertex_color;
-  vertex_color.SetColor(color);
-  ret.colors.resize(NUM_BOX_VERTICES, vertex_color);
-  ret.triangles.assign(std::begin(BOX_TRIANGLE_INDICES), std::end(BOX_TRIANGLE_INDICES));
-
-  return ret;
+void TriangleMesh::LightDirection(Vector3 light_direction, float ambient_coefficient) {
+  for (int vi = 0; vi < vertices.size(); vi++) {
+    colors[vi] = Vector3(1.0F, 0.0F, 0.0F);
+    colors[vi] = colors[vi].Light(normals[vi], light_direction, ambient_coefficient);
+  }
 }
 
-auto TriangleMesh::Sphere(Vector3 position, float radius, int subdivisions, unsigned int color) -> TriangleMesh {
-  TriangleMesh ret;
-
-  Vector3 vertex_color;
-  vertex_color.SetColor(color);
-
-  for (int lat = 0; lat <= subdivisions; ++lat) {
-    float theta = (float)lat * std::numbers::pi_v<float> / (float)subdivisions;
-    float sin_theta = sinf(theta);
-    float cos_theta = cosf(theta);
-
-    for (int lon = 0; lon <= subdivisions; ++lon) {
-      float phi = (float)lon * (float)2 * std::numbers::pi_v<float> / (float)subdivisions;
-      float sin_phi = sinf(phi);
-      float cos_phi = cosf(phi);
-
-      float x_coordinate = radius * sin_theta * cos_phi;
-      float y_coordinate = radius * cos_theta;
-      float z_coordinate = radius * sin_theta * sin_phi;
-
-      ret.vertices.push_back(position + Vector3(x_coordinate, y_coordinate, z_coordinate));
-      ret.colors.push_back(vertex_color);
-    }
+void TriangleMesh::LightPoint(Vector3 light_point, float ambient_coefficient) {
+  for (int vi = 0; vi < vertices.size(); vi++) {
+    colors[vi] = Vector3(1.0F, 0.0F, 0.0F);
+    Vector3 light_direction = (light_point - vertices[vi]).GetNormal();
+    colors[vi] = colors[vi].Light(normals[vi], light_direction, ambient_coefficient);
   }
-
-  for (int lat = 0; lat < subdivisions; ++lat) {
-    for (int lon = 0; lon < subdivisions; ++lon) {
-      int first = (lat * (subdivisions + 1)) + lon;
-      int second = first + subdivisions + 1;
-
-      ret.triangles.push_back(first);
-      ret.triangles.push_back(second);
-      ret.triangles.push_back(first + 1);
-
-      ret.triangles.push_back(second);
-      ret.triangles.push_back(second + 1);
-      ret.triangles.push_back(first + 1);
-    }
-  }
-
-  return ret;
-}
-
-auto TriangleMesh::Cylinder(Vector3 position, float radius, float height, int subdivisions, unsigned int color)
-    -> TriangleMesh {
-  TriangleMesh ret;
-
-  Vector3 vertex_color;
-  vertex_color.SetColor(color);
-
-  float half_height = height / (float)2;
-
-  ret.vertices.push_back(position + Vector3(0.0F, half_height, 0.0F));
-  ret.colors.push_back(vertex_color);
-  ret.vertices.push_back(position + Vector3(0.0F, -half_height, 0.0F));
-  ret.colors.push_back(vertex_color);
-
-  for (int i = 0; i <= subdivisions; ++i) {
-    float angle = (float)i * (float)2 * std::numbers::pi_v<float> / (float)subdivisions;
-    float x_coordinate = radius * cosf(angle);
-    float z_coordinate = radius * sinf(angle);
-
-    ret.vertices.push_back(position + Vector3(x_coordinate, half_height, z_coordinate));
-    ret.colors.push_back(vertex_color);
-
-    ret.vertices.push_back(position + Vector3(x_coordinate, -half_height, z_coordinate));
-    ret.colors.push_back(vertex_color);
-  }
-
-  for (int i = 0; i < subdivisions; ++i) {
-    ret.triangles.push_back(0);
-    ret.triangles.push_back(2 + (i * 2));
-    ret.triangles.push_back(2 + ((i + 1) * 2));
-  }
-
-  for (int i = 0; i < subdivisions; ++i) {
-    ret.triangles.push_back(1);
-    ret.triangles.push_back(3 + ((i + 1) * 2));
-    ret.triangles.push_back(3 + (i * 2));
-  }
-
-  for (int i = 0; i < subdivisions; ++i) {
-    int top_current = 2 + (i * 2);
-    int bottom_current = 3 + (i * 2);
-    int top_next = 2 + ((i + 1) * 2);
-    int bottom_next = 3 + ((i + 1) * 2);
-
-    ret.triangles.push_back(top_current);
-    ret.triangles.push_back(bottom_current);
-    ret.triangles.push_back(top_next);
-
-    ret.triangles.push_back(bottom_current);
-    ret.triangles.push_back(bottom_next);
-    ret.triangles.push_back(top_next);
-  }
-
-  return ret;
 }

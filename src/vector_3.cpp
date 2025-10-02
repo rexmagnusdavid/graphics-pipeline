@@ -135,3 +135,19 @@ void Vector3::SetColor(unsigned int color) {
   (*this)[1] = (float)((unsigned char *)&color)[1] / Color::MAX_ALPHA_CHANNEL;
   (*this)[2] = (float)((unsigned char *)&color)[2] / Color::MAX_ALPHA_CHANNEL;
 }
+
+auto Vector3::Light(Vector3 normal, Vector3 light_direction, float ambient_coefficient) -> Vector3 {
+  Vector3 &S = *this;
+  float kd = normal.Dot(light_direction);
+  kd = (kd < 0.0F) ? 0.0F : kd;
+  Vector3 ret = S * (ambient_coefficient + ((1.0F - ambient_coefficient) * kd));
+  return ret;
+}
+
+auto Vector3::Reflect(Vector3 light_direction) -> Vector3 {
+  Vector3 &n = *this;
+  Vector3 ln = n * (n.Dot(light_direction));
+  Vector3 lt = light_direction - ln;
+  Vector3 ret = ln - lt;
+  return ret;
+}

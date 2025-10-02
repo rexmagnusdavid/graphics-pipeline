@@ -26,4 +26,7 @@ public:
 
   auto GetColor() -> unsigned int;
   void SetColor(unsigned int new_color);
+
+  auto Light(Vector3 normal, Vector3 light_direction, float ambient_coefficient) -> Vector3;
+  auto Reflect(Vector3 light_direction) -> Vector3;
 };

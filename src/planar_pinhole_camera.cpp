@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "graphics_pipeline/matrix_3x3.h"
+#include "graphics_pipeline/vector_3.h"
 
 PlanarPinholeCamera::PlanarPinholeCamera(int width, int height, float horizontal_fov) : width(width), height(height) {
   position = Vector3(0.0F, 0.0F, 0.0F);
@@ -75,6 +76,25 @@ void PlanarPinholeCamera::Zoom(float factor) {
 
 void PlanarPinholeCamera::Translate(Vector3 translation_vector) { position = position + translation_vector; }
 
+void PlanarPinholeCamera::Pose(Vector3 new_position, Vector3 look_at_point, Vector3 up_vector) {
+
+  Vector3 newa;
+  Vector3 newb;
+  Vector3 newc;
+
+  Vector3 newvd = (look_at_point - new_position).GetNormal();
+  newa = (newvd.Cross(up_vector)).GetNormal();
+  newb = (newvd.Cross(newa)).GetNormal();
+  float focal_length = GetFocalLength();
+
+  newc = newvd * focal_length - newa * ((float)width / (float)2) - newb * ((float)height / (float)2);
+
+  right = newa;
+  up = newb;
+  forward = newc;
+  position = new_position;
+}
+
 auto PlanarPinholeCamera::Project(Vector3 point, Vector3 &projected_point) -> int {
   Matrix3x3 matrix;
   matrix.SetColumn(0, right);
@@ -92,6 +112,12 @@ auto PlanarPinholeCamera::Project(Vector3 point, Vector3 &projected_point) -> in
   projected_point[2] = 1.0F / q_var[2];
 
   return 1;
+}
+
+auto PlanarPinholeCamera::Unproject(int u_coordinate, int v_coordinate, float inverse_depth) -> Vector3 {
+  Vector3 ret = position + (right * (0.5F + (float)u_coordinate) + up * (0.5F + (float)v_coordinate) + forward) *
+                               (1.0F / inverse_depth);
+  return ret;
 }
 
 auto PlanarPinholeCamera::GetViewDirection() -> Vector3 {

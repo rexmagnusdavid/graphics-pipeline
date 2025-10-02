@@ -8,6 +8,7 @@ class TriangleMesh {
 public:
   std::vector<Vector3> colors;
   std::vector<Vector3> vertices;
+  std::vector<Vector3> normals;
   std::vector<unsigned int> triangles;
   TriangleMesh() = default;
 
@@ -20,6 +21,9 @@ public:
   void Scale(float factor);
   void Translate(Vector3 vector);
   void RotateAboutAxis(Vector3 origin, Vector3 direction, float angle);
+
+  void LightDirection(Vector3 light_direction, float ambient_coefficient);
+  void LightPoint(Vector3 light_point, float ambient_coefficient);
 
   static auto AxisAlignedBox(Vector3 corner_0, Vector3 corner_1, unsigned int color) -> TriangleMesh;
   static auto Sphere(Vector3 position, float radius, int subdivisions, unsigned int color) -> TriangleMesh;

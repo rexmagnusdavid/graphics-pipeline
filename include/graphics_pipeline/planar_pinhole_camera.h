@@ -21,7 +21,10 @@ public:
   void Roll(float angle);
   void Zoom(float factor);
   void Translate(Vector3 vector);
+  void Pose(Vector3 new_position, Vector3 look_at_point, Vector3 up_vector);
+
   auto Project(Vector3 point, Vector3 &projected_point) -> int;
+  auto Unproject(int u_coordinate, int v_coordinate, float inverse_depth) -> Vector3;
 
   auto GetViewDirection() -> Vector3;
   auto GetFocalLength() -> float;
