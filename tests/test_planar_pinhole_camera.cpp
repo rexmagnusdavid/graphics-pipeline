@@ -139,7 +139,7 @@ TEST_F(PlanarPinholeCameraTest, GetFocalLength) {
   EXPECT_GT(focal_length, 0.0F);
 
   // For a given width and FOV, focal length follows pinhole camera formula
-  float expected_focal_length = (camera.width / 2.0F) / std::tan(camera.horizontal_fov / 2.0F);
+  float expected_focal_length = ((float)camera.width / 2.0F) / std::tan(camera.horizontal_fov / 2.0F);
   EXPECT_TRUE(FloatEqual(focal_length, expected_focal_length));
 }
 

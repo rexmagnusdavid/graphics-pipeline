@@ -48,27 +48,6 @@ void GUI::Render() {
   if (ImGui::Button("DBG")) {
     scene->DBG();
   }
-  if (ImGui::Button("Draw Rectangle")) {
-    scene->DrawRectangle();
-  }
-  if (ImGui::Button("Draw Circle")) {
-    scene->DrawCircle();
-  }
-  if (ImGui::Button("Draw Line")) {
-    scene->DrawLine();
-  }
-  if (ImGui::Button("Draw Name")) {
-    scene->DrawName();
-  }
-  if (ImGui::Button("Animate Name")) {
-    scene->AnimateName();
-  }
-  if (ImGui::Button("Draw Rotation Graph (A2)")) {
-    scene->DrawRotationGraph();
-  }
-  if (ImGui::Button("Save as .tiff")) {
-    scene->SaveTiff();
-  }
   ImGui::End();
 
   ImGui::Render();

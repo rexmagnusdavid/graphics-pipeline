@@ -16,23 +16,17 @@ public:
 
   void Run();
 
+  // Assignment-related functions here.
   void DBG();
-  void DrawRectangle();
-  void DrawCircle();
-  void DrawLine();
-  void DrawName();
-  void AnimateName();
-  void DrawRotationGraph();
-  void SaveTiff();
 
 private:
-  static void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
+  static void KeyCallback(GLFWwindow *window, int key, int scan_code, int action, int mods);
   static void MouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
-  static void CursorPositionCallback(GLFWwindow *window, double xpos, double ypos);
-  static void ScrollCallback(GLFWwindow *window, double xoffset, double yoffset);
+  static void CursorPositionCallback(GLFWwindow *window, double u_coordinate, double v_coordinate);
+  static void ScrollCallback(GLFWwindow *window, double u_offset, double v_offset);
 
   void HandleKeyInput(int key, int action, int mods);
   void HandleMouseButton(int button, int action, int mods);
-  void HandleCursorPosition(double xpos, double ypos);
-  void HandleScroll(double xoffset, double yoffset);
+  void HandleCursorPosition(double u_coordinate, double v_coordinate);
+  void HandleScroll(double u_offset, double v_offset);
 };

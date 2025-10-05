@@ -32,6 +32,7 @@ void Framebuffer::Resize(int _width, int _height) {
   height = _height;
   pixels.clear();
   pixels.resize(static_cast<long>(width) * height);
+
   glfwSetWindowSize(window, width, height);
 }
 
@@ -97,9 +98,9 @@ void Framebuffer::DrawSegment(Vector3 start_point, Vector3 end_point, unsigned i
   start_point[2] = 0.0F;
   end_point[2] = 0.0F;
 
-  int number_of_pixels = (int)((end_point - start_point).GetMagnitude() + 2);
-  for (int i = 0; i < number_of_pixels; i++) {
-    Vector3 current_point = start_point + (end_point - start_point) * (float)i / (float)(number_of_pixels - 1);
+  int length = (int)((end_point - start_point).GetMagnitude() + 2);
+  for (int i = 0; i < length; i++) {
+    Vector3 current_point = start_point + (end_point - start_point) * (float)i / (float)(length - 1);
     SetPixel((int)current_point[0], (int)current_point[1], color);
   }
 }
@@ -108,10 +109,10 @@ void Framebuffer::DrawSegment(Vector3 start_point, Vector3 end_point, Vector3 st
   start_point[2] = 0.0F;
   end_point[2] = 0.0F;
 
-  int number_of_pixels = (int)((end_point - start_point).GetMagnitude() + 2);
-  for (int i = 0; i < number_of_pixels; i++) {
-    Vector3 current_point = start_point + (end_point - start_point) * (float)i / (float)(number_of_pixels - 1);
-    Vector3 current_color = start_color + (end_color - start_color) * (float)i / (float)(number_of_pixels - 1);
+  int length = (int)((end_point - start_point).GetMagnitude() + 2);
+  for (int i = 0; i < length; i++) {
+    Vector3 current_point = start_point + (end_point - start_point) * (float)i / (float)(length - 1);
+    Vector3 current_color = start_color + (end_color - start_color) * (float)i / (float)(length - 1);
     unsigned int color = current_color.GetColor();
     SetPixel((int)current_point[0], (int)current_point[1], color);
   }
