@@ -6,6 +6,8 @@
 #include <iostream>
 
 #include "graphics_pipeline/color.h"
+#include "graphics_pipeline/triangle_mesh.h"
+#include "graphics_pipeline/vector_3.h"
 
 Scene *scene;
 constexpr int framebuffer_width = 640;
@@ -17,7 +19,6 @@ Scene::Scene() {
   gui = new GUI(gui_width, gui_height, "GUI");
   framebuffer = new Framebuffer(framebuffer_width, framebuffer_height, "SW Framebuffer");
   camera = new PlanarPinholeCamera(framebuffer_width, framebuffer_height, 1.0F);
-  mesh = {};
 
   glfwSetWindowUserPointer(framebuffer->window, this);
   glfwSetKeyCallback(framebuffer->window, KeyCallback);
@@ -30,7 +31,6 @@ Scene::~Scene() {
   delete camera;
   delete framebuffer;
   delete gui;
-  delete mesh;
 }
 
 void Scene::Run() {
@@ -45,6 +45,88 @@ void Scene::Run() {
     framebuffer->Render();
 
     glfwPollEvents();
+  }
+}
+
+void Scene::Draw3DPoint(Vector3 point, int size, unsigned int color) {
+  Vector3 projected_point;
+
+  if (camera->Project(point, projected_point) == 0) {
+    return;
+  }
+
+  framebuffer->DrawPoint(projected_point, size, color);
+}
+
+void Scene::Draw3DSegment(Vector3 start_point, Vector3 end_point, unsigned int color) {
+  Vector3 projected_start_point;
+  Vector3 projected_end_point;
+
+  if (camera->Project(start_point, projected_start_point) == 0) {
+    return;
+  }
+
+  if (camera->Project(end_point, projected_end_point) == 0) {
+    return;
+  }
+
+  framebuffer->DrawSegment(projected_start_point, projected_end_point, color);
+}
+
+void Scene::Draw3DSegment(Vector3 start_point, Vector3 end_point, Vector3 start_color, Vector3 end_color) {
+  Vector3 projected_start_point;
+  Vector3 projected_end_point;
+
+  if (camera->Project(start_point, projected_start_point) == 0) {
+    return;
+  }
+
+  if (camera->Project(end_point, projected_end_point) == 0) {
+    return;
+  }
+
+  framebuffer->DrawSegment(projected_start_point, projected_end_point, start_color, end_color);
+}
+
+void Scene::DrawMeshPoints(TriangleMesh *mesh, int size, unsigned int color) {
+  for (auto vertex : mesh->vertices) {
+    Draw3DPoint(vertex, size, color);
+  }
+}
+
+void Scene::DrawMeshWireframe(TriangleMesh *mesh, unsigned int color) {
+  for (int tri = 0; tri < mesh->triangles.size(); tri++) {
+    std::array<Vector3, 3> vertices;
+    vertices[0] = mesh->vertices[mesh->triangles[(tri * 3) + 0]];
+    vertices[1] = mesh->vertices[mesh->triangles[(tri * 3) + 1]];
+    vertices[2] = mesh->vertices[mesh->triangles[(tri * 3) + 2]];
+
+    std::array<Vector3, 3> colors;
+    if (!mesh->colors.empty()) {
+      colors[0] = mesh->colors[mesh->triangles[(tri * 3) + 0]];
+      colors[1] = mesh->colors[mesh->triangles[(tri * 3) + 1]];
+      colors[2] = mesh->colors[mesh->triangles[(tri * 3) + 2]];
+    }
+
+    for (int ei = 0; ei < 3; ei++) {
+      if (!mesh->colors.empty()) {
+        Draw3DSegment(vertices[ei], vertices[(ei + 1) % 3], colors[ei], colors[(ei + 1) % 3]);
+        continue;
+      }
+
+      Draw3DSegment(vertices[ei], vertices[(ei + 1) % 3], color);
+    }
+  }
+}
+
+void Scene::DrawMeshNormals(TriangleMesh *mesh, int size) {
+  if (mesh->normals.empty()) {
+    return;
+  }
+
+  for (int i = 0; i < mesh->vertices.size(); i++) {
+    Draw3DSegment(mesh->vertices[i], mesh->vertices[i] + (mesh->normals[i].GetNormal() * (float)size), mesh->colors[i],
+                  Vector3(1.0F, 0.0F, 0.0F));
   }
 }
 
@@ -98,6 +180,7 @@ void Scene::HandleCursorPosition(double u_coordinate, double v_coordinate) {}
 
 void Scene::HandleScroll(double u_offset, double v_offset) {}
 
+// Assignment-related functions here.
 void Scene::DBG() {
   glfwMakeContextCurrent(framebuffer->window);
 

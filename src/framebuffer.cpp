@@ -94,6 +94,17 @@ void Framebuffer::FillBackground(unsigned int color) {
   }
 }
 
+void Framebuffer::DrawPoint(Vector3 point, int size, unsigned int color) {
+  int u_coordinate = (int)point[0];
+  int v_coordinate = (int)point[1];
+
+  for (int i = v_coordinate - (size / 2); i <= v_coordinate + size / 2; i++) {
+    for (int j = u_coordinate - (size / 2); j <= u_coordinate + size / 2; j++) {
+      SetPixel(j, i, color);
+    }
+  }
+}
+
 void Framebuffer::DrawSegment(Vector3 start_point, Vector3 end_point, unsigned int color) {
   start_point[2] = 0.0F;
   end_point[2] = 0.0F;

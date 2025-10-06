@@ -10,11 +10,18 @@ public:
   GUI *gui;
   Framebuffer *framebuffer;
   PlanarPinholeCamera *camera;
-  TriangleMesh *mesh;
   Scene();
   ~Scene();
 
   void Run();
+
+  void Draw3DPoint(Vector3 point, int size, unsigned int color);
+  void Draw3DSegment(Vector3 start_point, Vector3 end_point, unsigned int color);
+  void Draw3DSegment(Vector3 start_point, Vector3 end_point, Vector3 start_color, Vector3 end_color);
+
+  void DrawMeshPoints(TriangleMesh *mesh, int size, unsigned int color);
+  void DrawMeshWireframe(TriangleMesh *mesh, unsigned int color);
+  void DrawMeshNormals(TriangleMesh *mesh, int size);
 
   // Assignment-related functions here.
   void DBG();

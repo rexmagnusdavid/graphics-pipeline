@@ -24,6 +24,7 @@ public:
   void SetPixel(int u_coordinate, int v_coordinate, unsigned int color);
 
   void FillBackground(unsigned int color);
+  void DrawPoint(Vector3 point, int size, unsigned int color);
   void DrawSegment(Vector3 start_point, Vector3 end_point, unsigned int color);
   void DrawSegment(Vector3 start_point, Vector3 end_point, Vector3 start_color, Vector3 end_color);
 };
