@@ -128,3 +128,125 @@ void Framebuffer::DrawSegment(Vector3 start_point, Vector3 end_point, Vector3 st
     SetPixel((int)current_point[0], (int)current_point[1], color);
   }
 }
+
+void Framebuffer::DrawRectangle(int u_coordinate, int v_coordinate, int width, int height, unsigned int color) {
+  Vector3 top_left((float)u_coordinate, (float)v_coordinate, 0.0F);
+  Vector3 top_right((float)(u_coordinate + width - 1), (float)v_coordinate, 0.0F);
+  Vector3 bottom_left((float)u_coordinate, (float)(v_coordinate + height - 1), 0.0F);
+  Vector3 bottom_right((float)(u_coordinate + width - 1), (float)(v_coordinate + height - 1), 0.0F);
+
+  DrawSegment(top_left, top_right, color);
+  DrawSegment(top_right, bottom_right, color);
+  DrawSegment(bottom_right, bottom_left, color);
+  DrawSegment(bottom_left, top_left, color);
+}
+
+void Framebuffer::DrawRectangleFilled(int u_coordinate, int v_coordinate, int width, int height, unsigned int color) {
+  for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
+      SetPixel(u_coordinate + j, v_coordinate + i, color);
+    }
+  }
+}
+
+void Framebuffer::DrawCircle(int u_center, int v_center, int radius, unsigned int color) {
+  int u_coordiante = 0;
+  int v_coordinate = radius;
+  int decision = 1 - radius;
+
+  auto draw_circle_points = [&](int center_u, int center_v, int delta_u, int delta_v) {
+    SetPixel(center_u + delta_u, center_v + delta_v, color);
+    SetPixel(center_u - delta_u, center_v + delta_v, color);
+    SetPixel(center_u + delta_u, center_v - delta_v, color);
+    SetPixel(center_u - delta_u, center_v - delta_v, color);
+    SetPixel(center_u + delta_v, center_v + delta_u, color);
+    SetPixel(center_u - delta_v, center_v + delta_u, color);
+    SetPixel(center_u + delta_v, center_v - delta_u, color);
+    SetPixel(center_u - delta_v, center_v - delta_u, color);
+  };
+
+  while (u_coordiante <= v_coordinate) {
+    draw_circle_points(u_center, v_center, u_coordiante, v_coordinate);
+    u_coordiante++;
+    if (decision < 0) {
+      decision += 2 * u_coordiante + 1;
+    } else {
+      v_coordinate--;
+      decision += 2 * (u_coordiante - v_coordinate) + 1;
+    }
+  }
+}
+
+void Framebuffer::DrawCircleFilled(int u_center, int v_center, int radius, unsigned int color) {
+  for (int i = -radius; i <= radius; i++) {
+    for (int j = -radius; j <= radius; j++) {
+      if (j * j + i * i <= radius * radius) {
+        SetPixel(u_center + j, v_center + i, color);
+      }
+    }
+  }
+}
+
+void Framebuffer::DrawTriangle(Vector3 point_0, Vector3 point_1, Vector3 point_2, unsigned int color) {
+  DrawSegment(point_0, point_1, color);
+  DrawSegment(point_1, point_2, color);
+  DrawSegment(point_2, point_0, color);
+}
+
+void Framebuffer::DrawTriangleFilled(Vector3 point_0, Vector3 point_1, Vector3 point_2, unsigned int color) {
+  if (point_0[1] > point_1[1]) {
+    std::swap(point_0, point_1);
+  }
+  if (point_0[1] > point_2[1]) {
+    std::swap(point_0, point_2);
+  }
+  if (point_1[1] > point_2[1]) {
+    std::swap(point_1, point_2);
+  }
+
+  auto fill_flat_bottom_triangle = [&](Vector3 vector_0, Vector3 vector_1, Vector3 vector_2) {
+    float inverse_slope_1 = (vector_1[0] - vector_0[0]) / (vector_1[1] - vector_0[1]);
+    float inverse_slope_2 = (vector_2[0] - vector_0[0]) / (vector_2[1] - vector_0[1]);
+
+    float u_1 = vector_0[0];
+    float u_2 = vector_0[0];
+
+    for (int i = (int)vector_0[1]; i <= (int)vector_1[1]; i++) {
+      Vector3 start_point(u_1, (float)i, 0.0F);
+      Vector3 end_point(u_2, (float)i, 0.0F);
+      DrawSegment(start_point, end_point, color);
+      u_1 += inverse_slope_1;
+      u_2 += inverse_slope_2;
+    }
+  };
+
+  auto fill_flat_top_triangle = [&](Vector3 vector_0, Vector3 vector_1, Vector3 vector_2) {
+    float inverse_slope_1 = (vector_2[0] - vector_0[0]) / (vector_2[1] - vector_0[1]);
+    float inverse_slope_2 = (vector_2[0] - vector_1[0]) / (vector_2[1] - vector_1[1]);
+
+    float u_1 = vector_2[0];
+    float u_2 = vector_2[0];
+
+    for (int i = (int)vector_2[1]; i > (int)vector_0[1]; i--) {
+      Vector3 start_point(u_1, (float)i, 0.0F);
+      Vector3 end_point(u_2, (float)i, 0.0F);
+      DrawSegment(start_point, end_point, color);
+      u_1 -= inverse_slope_1;
+      u_2 -= inverse_slope_2;
+    }
+  };
+
+  if (point_1[1] == point_2[1]) {
+    fill_flat_bottom_triangle(point_0, point_1, point_2);
+  } else if (point_0[1] == point_1[1]) {
+    fill_flat_top_triangle(point_0, point_1, point_2);
+  } else {
+    Vector3 point_3;
+    point_3[1] = point_1[1];
+    point_3[0] = point_0[0] + ((point_1[1] - point_0[1]) / (point_2[1] - point_0[1])) * (point_2[0] - point_0[0]);
+    point_3[2] = 0.0F;
+
+    fill_flat_bottom_triangle(point_0, point_1, point_3);
+    fill_flat_top_triangle(point_1, point_3, point_2);
+  }
+}
