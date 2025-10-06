@@ -88,6 +88,33 @@ void Framebuffer::SetPixel(int u_coordinate, int v_coordinate, unsigned int colo
   pixels[((height - 1 - v_coordinate) * width) + u_coordinate] = color;
 }
 
+auto Framebuffer::GetZBuffer(int u_coordinate, int v_coordinate) -> float {
+  if (u_coordinate < 0 || u_coordinate >= width || v_coordinate < 0 || v_coordinate >= height) {
+    return 0.0F;
+  }
+
+  int index = ((height - 1 - v_coordinate) * width) + u_coordinate;
+  return z_buffer[index];
+}
+
+void Framebuffer::SetZBuffer(int u_coordinate, int v_coordinate, float z_value) {
+  if (u_coordinate < 0 || u_coordinate >= width || v_coordinate < 0 || v_coordinate >= height) {
+    return;
+  }
+
+  int index = ((height - 1 - v_coordinate) * width) + u_coordinate;
+  z_buffer[index] = z_value;
+}
+
+auto Framebuffer::IsFarther(int u_coordinate, int v_coordinate, float z_value) -> bool {
+  if (u_coordinate < 0 || u_coordinate >= width || v_coordinate < 0 || v_coordinate >= height) {
+    return true;
+  }
+
+  int index = ((height - 1 - v_coordinate) * width) + u_coordinate;
+  return z_value <= z_buffer[index];
+}
+
 void Framebuffer::FillBackground(unsigned int color) {
   for (int i = 0; i < width * height; i++) {
     pixels[i] = color;

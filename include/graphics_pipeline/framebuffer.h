@@ -9,6 +9,7 @@
 class Framebuffer {
 public:
   std::vector<unsigned int> pixels;
+  std::vector<float> z_buffer;
   int width, height;
   GLFWwindow *window;
   Framebuffer(int _width, int _height, const char *title);
@@ -22,6 +23,10 @@ public:
 
   auto GetPixel(int u_coordinate, int v_coordinate) -> unsigned int;
   void SetPixel(int u_coordinate, int v_coordinate, unsigned int color);
+
+  auto GetZBuffer(int u_coordinate, int v_coordinate) -> float;
+  void SetZBuffer(int u_coordinate, int v_coordinate, float z_value);
+  auto IsFarther(int u_coordinate, int v_coordinate, float z_value) -> bool;
 
   void FillBackground(unsigned int color);
   void DrawPoint(Vector3 point, int size, unsigned int color);
