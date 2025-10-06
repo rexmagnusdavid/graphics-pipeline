@@ -28,4 +28,7 @@ public:
 
   auto GetViewDirection() -> Vector3;
   auto GetFocalLength() -> float;
+
+  static auto Interpolate(PlanarPinholeCamera *start_camera, PlanarPinholeCamera *end_camera, float time)
+      -> PlanarPinholeCamera;
 };

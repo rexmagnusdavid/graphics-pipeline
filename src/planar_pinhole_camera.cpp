@@ -130,3 +130,20 @@ auto PlanarPinholeCamera::GetFocalLength() -> float {
 
   return ret;
 }
+
+auto PlanarPinholeCamera::Interpolate(PlanarPinholeCamera *start_camera, PlanarPinholeCamera *end_camera, float time)
+    -> PlanarPinholeCamera {
+  PlanarPinholeCamera result_camera;
+
+  result_camera.position = start_camera->position + (end_camera->position - start_camera->position) * time;
+  result_camera.right = (start_camera->right + (end_camera->right - start_camera->right) * time).GetNormal();
+  result_camera.up = (start_camera->up + (end_camera->up - start_camera->up) * time).GetNormal();
+  result_camera.forward = (start_camera->forward + (end_camera->forward - start_camera->forward) * time).GetNormal();
+
+  result_camera.width = start_camera->width;
+  result_camera.height = start_camera->height;
+  result_camera.horizontal_fov =
+      start_camera->horizontal_fov + (end_camera->horizontal_fov - start_camera->horizontal_fov) * time;
+
+  return result_camera;
+}
