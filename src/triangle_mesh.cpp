@@ -181,29 +181,15 @@ auto TriangleMesh::AxisAlignedBox(Vector3 min_corner, Vector3 max_corner, unsign
   constexpr int NUM_TRIANGLES = 12;
   constexpr int NUM_INDICES = NUM_TRIANGLES * 3;
 
-  // Vertex positions: 8 corners of the box
   const std::array<Vector3, NUM_VERTICES> vertex_positions = {
-      Vector3(min_corner[0], min_corner[1], min_corner[2]), // 0: min xyz
-      Vector3(max_corner[0], min_corner[1], min_corner[2]), // 1: max x, min yz
-      Vector3(max_corner[0], max_corner[1], min_corner[2]), // 2: max xy, min z
-      Vector3(min_corner[0], max_corner[1], min_corner[2]), // 3: min x, max y, min z
-      Vector3(min_corner[0], min_corner[1], max_corner[2]), // 4: min xy, max z
-      Vector3(max_corner[0], min_corner[1], max_corner[2]), // 5: max xz, min y
-      Vector3(max_corner[0], max_corner[1], max_corner[2]), // 6: max xyz
-      Vector3(min_corner[0], max_corner[1], max_corner[2])  // 7: min x, max yz
-  };
+      Vector3(min_corner[0], min_corner[1], min_corner[2]), Vector3(max_corner[0], min_corner[1], min_corner[2]),
+      Vector3(max_corner[0], max_corner[1], min_corner[2]), Vector3(min_corner[0], max_corner[1], min_corner[2]),
+      Vector3(min_corner[0], min_corner[1], max_corner[2]), Vector3(max_corner[0], min_corner[1], max_corner[2]),
+      Vector3(max_corner[0], max_corner[1], max_corner[2]), Vector3(min_corner[0], max_corner[1], max_corner[2])};
 
-  // Triangle indices (2 triangles per face, 6 faces)
   constexpr std::array<unsigned int, NUM_INDICES> triangle_indices = {
-      0, 1, 2, 0, 2, 3, // Front face (z = min)
-      5, 4, 7, 5, 7, 6, // Back face (z = max)
-      4, 0, 3, 4, 3, 7, // Left face (x = min)
-      1, 5, 6, 1, 6, 2, // Right face (x = max)
-      4, 5, 1, 4, 1, 0, // Bottom face (y = min)
-      3, 2, 6, 3, 6, 7  // Top face (y = max)
-  };
+      0, 1, 2, 0, 2, 3, 5, 4, 7, 5, 7, 6, 4, 0, 3, 4, 3, 7, 1, 5, 6, 1, 6, 2, 4, 5, 1, 4, 1, 0, 3, 2, 6, 3, 6, 7};
 
-  // Normal directions for each vertex (normalized corner directions)
   constexpr std::array<std::array<float, 3>, NUM_VERTICES> normal_data = {{{-1.0F, -1.0F, -1.0F},
                                                                            {1.0F, -1.0F, -1.0F},
                                                                            {1.0F, 1.0F, -1.0F},
@@ -240,7 +226,6 @@ auto TriangleMesh::Sphere(Vector3 position, float radius, int subdivisions, unsi
   constexpr int ICOSAHEDRON_TRIANGLES = 20;
   constexpr int ICOSAHEDRON_INDICES = ICOSAHEDRON_TRIANGLES * 3;
 
-  // Icosahedron vertex positions (before scaling)
   constexpr std::array<std::array<float, 3>, ICOSAHEDRON_VERTICES> icosahedron_data = {{{-1.0F, GOLDEN_RATIO, 0.0F},
                                                                                         {1.0F, GOLDEN_RATIO, 0.0F},
                                                                                         {-1.0F, -GOLDEN_RATIO, 0.0F},
@@ -254,7 +239,6 @@ auto TriangleMesh::Sphere(Vector3 position, float radius, int subdivisions, unsi
                                                                                         {-GOLDEN_RATIO, 0.0F, -1.0F},
                                                                                         {-GOLDEN_RATIO, 0.0F, 1.0F}}};
 
-  // Icosahedron triangle indices
   constexpr std::array<unsigned int, ICOSAHEDRON_INDICES> icosahedron_triangle_indices = {
       0, 11, 5, 0, 5, 1, 0, 1, 7, 0, 7, 10, 0, 10, 11, 1, 5, 9, 5, 11, 4,  11, 10, 2,  10, 7, 6, 7, 1, 8,
       3, 9,  4, 3, 4, 2, 3, 2, 6, 3, 6, 8,  3, 8,  9,  4, 9, 5, 2, 4,  11, 6,  2,  10, 8,  6, 7, 9, 8, 1};
@@ -267,7 +251,6 @@ auto TriangleMesh::Sphere(Vector3 position, float radius, int subdivisions, unsi
 
   mesh.triangles.assign(icosahedron_triangle_indices.begin(), icosahedron_triangle_indices.end());
 
-  // Subdivide
   for (int subdivision = 0; subdivision < subdivisions; subdivision++) {
     std::vector<unsigned int> new_triangles;
     std::map<std::pair<unsigned int, unsigned int>, unsigned int> midpoint_cache;
@@ -315,14 +298,12 @@ auto TriangleMesh::Sphere(Vector3 position, float radius, int subdivisions, unsi
     mesh.triangles = new_triangles;
   }
 
-  // Translate to position and set normals
   mesh.normals.resize(mesh.vertices.size());
   for (size_t i = 0; i < mesh.vertices.size(); i++) {
     mesh.normals[i] = mesh.vertices[i].GetNormal();
     mesh.vertices[i] = mesh.vertices[i] + position;
   }
 
-  // Set colors
   mesh.colors.resize(mesh.vertices.size());
   Vector3 vertex_color;
   vertex_color.SetColor(color);
@@ -356,24 +337,20 @@ auto TriangleMesh::Cylinder(Vector3 position, float radius, float height, int su
   Vector3 vertex_color;
   vertex_color.SetColor(color);
 
-  // Bottom and top circle vertices
   for (int i = 0; i < subdivisions; i++) {
     float angle = static_cast<float>(i) * angle_step;
     float x_coord = radius * cosf(angle);
     float z_coord = radius * sinf(angle);
 
-    // Bottom circle
     mesh.vertices[i] = position + Vector3(x_coord, -half_height, z_coord);
     mesh.normals[i] = Vector3(x_coord, 0.0F, z_coord).GetNormal();
     mesh.colors[i] = vertex_color;
 
-    // Top circle
     mesh.vertices[subdivisions + i] = position + Vector3(x_coord, half_height, z_coord);
     mesh.normals[subdivisions + i] = Vector3(x_coord, 0.0F, z_coord).GetNormal();
     mesh.colors[subdivisions + i] = vertex_color;
   }
 
-  // Center vertices
   int bottom_center_index = subdivisions * 2;
   int top_center_index = (subdivisions * 2) + 1;
 
@@ -385,13 +362,11 @@ auto TriangleMesh::Cylinder(Vector3 position, float radius, float height, int su
   mesh.normals[top_center_index] = Vector3(0.0F, 1.0F, 0.0F);
   mesh.colors[top_center_index] = vertex_color;
 
-  // Create triangles
   int triangles_count = subdivisions * (TRIANGLES_PER_SIDE_QUAD + 2);
   mesh.triangles.resize(static_cast<long>(triangles_count) * VERTICES_PER_TRIANGLE);
 
   int triangle_index = 0;
 
-  // Side triangles (2 triangles per subdivision to form quads)
   for (int i = 0; i < subdivisions; i++) {
     int next = (i + 1) % subdivisions;
     int bottom_current = i;
@@ -409,7 +384,6 @@ auto TriangleMesh::Cylinder(Vector3 position, float radius, float height, int su
     }
   }
 
-  // Bottom cap triangles
   for (int i = 0; i < subdivisions; i++) {
     int next = (i + 1) % subdivisions;
     const std::array<unsigned int, VERTICES_PER_TRIANGLE> cap_indices = {
@@ -420,7 +394,6 @@ auto TriangleMesh::Cylinder(Vector3 position, float radius, float height, int su
     }
   }
 
-  // Top cap triangles
   for (int i = 0; i < subdivisions; i++) {
     int next = (i + 1) % subdivisions;
     const std::array<unsigned int, VERTICES_PER_TRIANGLE> cap_indices = {
