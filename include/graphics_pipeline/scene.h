@@ -22,8 +22,8 @@ public:
   void DrawMeshPoints(TriangleMesh *mesh, int size, unsigned int color);
   void DrawMeshWireframe(TriangleMesh *mesh, unsigned int color);
   void DrawMeshNormals(TriangleMesh *mesh, int size);
+  void DrawMeshFilled(TriangleMesh *mesh, bool use_lighting);
 
-  // Assignment-related functions here.
   void DBG();
 
 private:

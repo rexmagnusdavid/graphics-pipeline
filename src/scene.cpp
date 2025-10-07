@@ -55,7 +55,13 @@ void Scene::Draw3DPoint(Vector3 point, int size, unsigned int color) {
     return;
   }
 
-  framebuffer->DrawPoint(projected_point, size, color);
+  float focal_length = camera->GetFocalLength();
+
+  float u_coordinate = ((float)camera->width / (float)2) + (projected_point[0] * focal_length);
+  float v_coordinate = ((float)camera->height / (float)2) - (projected_point[1] * focal_length);
+
+  Vector3 screen_point(u_coordinate, v_coordinate, 0.0F);
+  framebuffer->DrawPoint(screen_point, size, color);
 }
 
 void Scene::Draw3DSegment(Vector3 start_point, Vector3 end_point, unsigned int color) {
@@ -70,7 +76,17 @@ void Scene::Draw3DSegment(Vector3 start_point, Vector3 end_point, unsigned int c
     return;
   }
 
-  framebuffer->DrawSegment(projected_start_point, projected_end_point, color);
+  float focal_length = camera->GetFocalLength();
+
+  float u_start = ((float)camera->width / (float)2) + (projected_start_point[0] * focal_length);
+  float v_start = ((float)camera->height / (float)2) - (projected_start_point[1] * focal_length);
+
+  float u_end = ((float)camera->width / (float)2) + (projected_end_point[0] * focal_length);
+  float v_end = ((float)camera->height / (float)2) - (projected_end_point[1] * focal_length);
+
+  Vector3 screen_start(u_start, v_start, 0.0F);
+  Vector3 screen_end(u_end, v_end, 0.0F);
+  framebuffer->DrawSegment(screen_start, screen_end, color);
 }
 
 void Scene::Draw3DSegment(Vector3 start_point, Vector3 end_point, Vector3 start_color, Vector3 end_color) {
@@ -85,7 +101,17 @@ void Scene::Draw3DSegment(Vector3 start_point, Vector3 end_point, Vector3 start_
     return;
   }
 
-  framebuffer->DrawSegment(projected_start_point, projected_end_point, start_color, end_color);
+  float focal_length = camera->GetFocalLength();
+
+  float u_start = ((float)camera->width / (float)2) + (projected_start_point[0] * focal_length);
+  float v_start = ((float)camera->height / (float)2) - (projected_start_point[1] * focal_length);
+
+  float u_end = ((float)camera->width / (float)2) + (projected_end_point[0] * focal_length);
+  float v_end = ((float)camera->height / (float)2) - (projected_end_point[1] * focal_length);
+
+  Vector3 screen_start(u_start, v_start, 0.0F);
+  Vector3 screen_end(u_end, v_end, 0.0F);
+  framebuffer->DrawSegment(screen_start, screen_end, start_color, end_color);
 }
 
 void Scene::DrawMeshPoints(TriangleMesh *mesh, int size, unsigned int color) {
@@ -95,26 +121,20 @@ void Scene::DrawMeshPoints(TriangleMesh *mesh, int size, unsigned int color) {
 }
 
 void Scene::DrawMeshWireframe(TriangleMesh *mesh, unsigned int color) {
-  for (int tri = 0; tri < mesh->triangles.size(); tri++) {
+  for (int i = 0; i < (int)mesh->triangles.size() / 3; i++) {
     std::array<Vector3, 3> vertices;
-    vertices[0] = mesh->vertices[mesh->triangles[(tri * 3) + 0]];
-    vertices[1] = mesh->vertices[mesh->triangles[(tri * 3) + 1]];
-    vertices[2] = mesh->vertices[mesh->triangles[(tri * 3) + 2]];
+    std::array<unsigned int, 3> indices;
 
-    std::array<Vector3, 3> colors;
-    if (!mesh->colors.empty()) {
-      colors[0] = mesh->colors[mesh->triangles[(tri * 3) + 0]];
-      colors[1] = mesh->colors[mesh->triangles[(tri * 3) + 1]];
-      colors[2] = mesh->colors[mesh->triangles[(tri * 3) + 2]];
-    }
+    indices[0] = mesh->triangles[(i * 3) + 0];
+    indices[1] = mesh->triangles[(i * 3) + 1];
+    indices[2] = mesh->triangles[(i * 3) + 2];
 
-    for (int ei = 0; ei < 3; ei++) {
-      if (!mesh->colors.empty()) {
-        Draw3DSegment(vertices[ei], vertices[(ei + 1) % 3], colors[ei], colors[(ei + 1) % 3]);
-        continue;
-      }
+    vertices[0] = mesh->vertices[indices[0]];
+    vertices[1] = mesh->vertices[indices[1]];
+    vertices[2] = mesh->vertices[indices[2]];
 
-      Draw3DSegment(vertices[ei], vertices[(ei + 1) % 3], color);
+    for (int j = 0; j < 3; j++) {
+      Draw3DSegment(vertices[j], vertices[(j + 1) % 3], color);
     }
   }
 }
@@ -180,7 +200,6 @@ void Scene::HandleCursorPosition(double u_coordinate, double v_coordinate) {}
 
 void Scene::HandleScroll(double u_offset, double v_offset) {}
 
-// Assignment-related functions here.
 void Scene::DBG() {
   glfwMakeContextCurrent(framebuffer->window);
 
