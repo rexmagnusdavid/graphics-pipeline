@@ -24,7 +24,7 @@ Framebuffer::~Framebuffer() { glfwDestroyWindow(window); }
 void Framebuffer::Render() {
   glfwMakeContextCurrent(window);
 
-  glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+  glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, pixels.data());
 
   glfwSwapBuffers(window);
 }
