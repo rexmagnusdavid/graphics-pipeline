@@ -31,6 +31,11 @@ Lighting::Lighting() {
   quadratic_attenuation_factor = DEFAULT_QUADRATIC_ATTENUATION;
 }
 
+auto Lighting::ComputeAttenuation(float distance) -> float {
+  return 1.0F / (constant_attenuation_factor + linear_attenuation_factor * distance +
+                 quadratic_attenuation_factor * distance * distance);
+}
+
 auto Lighting::ComputeLighting(const Vector3 &point, const Vector3 &normal, const Vector3 &view_direction,
                                const std::vector<LightSource> &lights, float ambient_coefficient,
                                float specular_exponent) -> Vector3 {
