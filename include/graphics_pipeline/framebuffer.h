@@ -26,6 +26,8 @@ public:
 
   auto GetZBuffer(int u_coordinate, int v_coordinate) -> float;
   void SetZBuffer(int u_coordinate, int v_coordinate, float z_value);
+  void ClearZBuffer();
+
   auto IsFarther(int u_coordinate, int v_coordinate, float z_value) -> bool;
 
   void FillBackground(unsigned int color);
@@ -38,4 +40,6 @@ public:
   void DrawCircleFilled(int u_center, int v_center, int radius, unsigned int color);
   void DrawTriangle(Vector3 point_0, Vector3 point_1, Vector3 point_2, unsigned int color);
   void DrawTriangleFilled(Vector3 point_0, Vector3 point_1, Vector3 point_2, unsigned int color);
+  void DrawTriangleFilled(Vector3 point_0, Vector3 point_1, Vector3 point_2, Vector3 color_0, Vector3 color_1,
+                          Vector3 color_2, float depth_0, float depth_1, float depth_2);
 };

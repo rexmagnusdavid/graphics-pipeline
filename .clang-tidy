@@ -8,4 +8,8 @@ Checks: >
   -bugprone-easily-swappable-parameters,
   -readability-make-member-function-const
 
+CheckOptions:
+  - key: readability-function-cognitive-complexity.Threshold
+    value: '30'
+
 HeaderFilterRegex: '.*'
