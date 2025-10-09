@@ -138,7 +138,7 @@ auto TriangleMesh::GetPosition() -> Vector3 {
   return ret;
 }
 
-void TriangleMesh::SetPosition(Vector3 new_position) { Translate(GetPosition() - new_position); }
+void TriangleMesh::SetPosition(Vector3 new_position) { Translate(new_position - GetPosition()); }
 
 void TriangleMesh::Scale(float factor) {
   Vector3 position = GetPosition();

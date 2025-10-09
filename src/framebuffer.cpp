@@ -5,6 +5,8 @@
 #include <iostream>
 #include <tiffio.h>
 
+#include "graphics_pipeline/color.h"
+
 Framebuffer::Framebuffer(int _width, int _height, const char *title) {
   width = _width;
   height = _height;
@@ -79,7 +81,12 @@ void Framebuffer::SaveTiff(char *file_name) {
 }
 
 auto Framebuffer::GetPixel(int u_coordinate, int v_coordinate) -> unsigned int {
-  return pixels[((height - 1 - v_coordinate) * width) + u_coordinate];
+  if (u_coordinate < 0 || u_coordinate >= width || v_coordinate < 0 || v_coordinate >= height) {
+    return Color::BLACK;
+  }
+
+  long index = (static_cast<long>(height - 1 - v_coordinate) * width) + u_coordinate;
+  return pixels[index];
 }
 
 void Framebuffer::SetPixel(int u_coordinate, int v_coordinate, unsigned int color) {
@@ -87,7 +94,8 @@ void Framebuffer::SetPixel(int u_coordinate, int v_coordinate, unsigned int colo
     return;
   }
 
-  pixels[((height - 1 - v_coordinate) * width) + u_coordinate] = color;
+  long index = (static_cast<long>(height - 1 - v_coordinate) * width) + u_coordinate;
+  pixels[index] = color;
 }
 
 auto Framebuffer::GetZBuffer(int u_coordinate, int v_coordinate) -> float {
@@ -95,7 +103,7 @@ auto Framebuffer::GetZBuffer(int u_coordinate, int v_coordinate) -> float {
     return 0.0F;
   }
 
-  int index = ((height - 1 - v_coordinate) * width) + u_coordinate;
+  long index = (static_cast<long>(height - 1 - v_coordinate) * width) + u_coordinate;
   return z_buffer[index];
 }
 
@@ -104,7 +112,7 @@ void Framebuffer::SetZBuffer(int u_coordinate, int v_coordinate, float z_value) 
     return;
   }
 
-  int index = ((height - 1 - v_coordinate) * width) + u_coordinate;
+  long index = (static_cast<long>(height - 1 - v_coordinate) * width) + u_coordinate;
   z_buffer[index] = z_value;
 }
 
@@ -115,7 +123,7 @@ auto Framebuffer::IsFarther(int u_coordinate, int v_coordinate, float z_value) -
     return true;
   }
 
-  int index = ((height - 1 - v_coordinate) * width) + u_coordinate;
+  long index = (static_cast<long>(height - 1 - v_coordinate) * width) + u_coordinate;
   return z_value <= z_buffer[index];
 }
 
@@ -243,9 +251,9 @@ void Framebuffer::DrawTriangleFilled(Vector3 point_0, Vector3 point_1, Vector3 p
     float u_2 = vector_0[0];
 
     for (int i = (int)vector_0[1]; i <= (int)vector_1[1]; i++) {
-      Vector3 start_point(u_1, (float)i, 0.0F);
-      Vector3 end_point(u_2, (float)i, 0.0F);
-      DrawSegment(start_point, end_point, color);
+      for (float j = std::min(u_1, u_2); j <= std::max(u_1, u_2); j += 1.0F) {
+        SetPixel((int)j, i, color);
+      }
       u_1 += inverse_slope_1;
       u_2 += inverse_slope_2;
     }
@@ -259,9 +267,9 @@ void Framebuffer::DrawTriangleFilled(Vector3 point_0, Vector3 point_1, Vector3 p
     float u_2 = vector_2[0];
 
     for (int i = (int)vector_2[1]; i > (int)vector_0[1]; i--) {
-      Vector3 start_point(u_1, (float)i, 0.0F);
-      Vector3 end_point(u_2, (float)i, 0.0F);
-      DrawSegment(start_point, end_point, color);
+      for (float j = std::min(u_1, u_2); j <= std::max(u_1, u_2); j += 1.0F) {
+        SetPixel((int)j, i, color);
+      }
       u_1 -= inverse_slope_1;
       u_2 -= inverse_slope_2;
     }
@@ -332,7 +340,7 @@ void Framebuffer::DrawTriangleFilled(Vector3 point_0, Vector3 point_1, Vector3 p
 
   auto interpolate_edge = [](Vector3 start_point, Vector3 end_point, Vector3 start_color, Vector3 end_color,
                              float start_depth, float end_depth, int scanline_y) -> std::tuple<float, Vector3, float> {
-    constexpr float MIN_HEIGHT_DIFF = 0.001F;
+    constexpr float MIN_HEIGHT_DIFF = 0.1F;
     if (fabsf(end_point[1] - start_point[1]) < MIN_HEIGHT_DIFF) {
       return {start_point[0], start_color, start_depth};
     }

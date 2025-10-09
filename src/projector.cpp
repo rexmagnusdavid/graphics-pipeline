@@ -60,7 +60,7 @@ auto Projector::ProjectColor(Vector3 world_point) -> Vector3 {
     return {0.0F, 0.0F, 0.0F};
   }
 
-  int idx = ((texture_height - 1 - v_coordinate) * texture_width) + u_coordinate;
+  long idx = (static_cast<long>(texture_height - 1 - v_coordinate) * texture_width) + u_coordinate;
   Vector3 color;
   color.SetColor(texture[idx]);
   return color;

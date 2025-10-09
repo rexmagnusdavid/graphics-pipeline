@@ -76,9 +76,9 @@ auto Matrix3x3::GetInverse() -> Matrix3x3 {
   Vector3 column_2 = (*this).GetColumn(2);
   float inverse_determinant = 1.0F / column_0.Dot(column_1.Cross(column_2));
 
-  ret[0] = column_1.Cross(column_2) * inverse_determinant;
-  ret[1] = column_2.Cross(column_0) * inverse_determinant;
-  ret[2] = column_0.Cross(column_1) * inverse_determinant;
+  ret.SetColumn(0, column_1.Cross(column_2) * inverse_determinant);
+  ret.SetColumn(1, column_2.Cross(column_0) * inverse_determinant);
+  ret.SetColumn(2, column_0.Cross(column_1) * inverse_determinant);
 
   return ret;
 }

@@ -31,7 +31,7 @@ auto ShadowMap::GetDepthBuffer(int u_coordinate, int v_coordinate) -> float {
   if (u_coordinate < 0 || u_coordinate >= width || v_coordinate < 0 || v_coordinate >= height) {
     return 0.0F;
   }
-  int idx = ((height - 1 - v_coordinate) * width) + u_coordinate;
+  long idx = (static_cast<long>(height - 1 - v_coordinate) * width) + u_coordinate;
   return depth_buffer[idx];
 }
 
@@ -40,7 +40,7 @@ void ShadowMap::SetDepthBuffer(int u_coordinate, int v_coordinate, float depth) 
     return;
   }
 
-  int idx = ((height - 1 - v_coordinate) * width) + u_coordinate;
+  long idx = (static_cast<long>(height - 1 - v_coordinate) * width) + u_coordinate;
   depth_buffer[idx] = depth;
 }
 
@@ -61,7 +61,7 @@ auto ShadowMap::IsInShadow(Vector3 world_point, float epsilon) -> bool {
   }
 
   float stored_depth = GetDepthBuffer(static_cast<int>(u_coordinate), static_cast<int>(v_coordinate));
-  return (light_space[2] + epsilon) < stored_depth;
+  return (light_space[2] - epsilon) < stored_depth;
 }
 
 auto ShadowMap::Project(Vector3 world_point, Vector3 &light_space_point) -> int {

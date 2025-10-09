@@ -263,10 +263,16 @@ void Scene::DBG() {
   constexpr int stepsN = 100;
   for (int si = 0; si < stepsN; si++) {
     framebuffer->FillBackground(Color::WHITE);
+
     int v_coordinate = (framebuffer->height / 2) + si;
+    if (v_coordinate >= framebuffer->height) {
+      break;
+    }
+
     for (int u_coordinate = stepsN; u_coordinate < stepsN * 2; u_coordinate++) {
       framebuffer->SetPixel(u_coordinate, v_coordinate, Color::BLACK);
     }
+
     framebuffer->Render();
     glfwPollEvents();
   }
