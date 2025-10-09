@@ -235,7 +235,62 @@ void Scene::ScrollCallback(GLFWwindow *window, double u_offset, double v_offset)
   }
 }
 
-void Scene::HandleKeyInput(int key, int action, int mods) {}
+void Scene::HandleKeyInput(int key, int action, int mods) {
+  if (action != GLFW_PRESS && action != GLFW_REPEAT) {
+    return;
+  }
+
+  constexpr float TRANSLATION_STEP = 1.0F;
+  constexpr float ROTATION_STEP = 0.1F;
+  constexpr float ZOOM_FACTOR = 1.1F;
+
+  switch (key) {
+  case GLFW_KEY_W:
+    camera->Translate(camera->forward * TRANSLATION_STEP);
+    break;
+  case GLFW_KEY_S:
+    camera->Translate(camera->forward * (-TRANSLATION_STEP));
+    break;
+  case GLFW_KEY_A:
+    camera->Translate(camera->right * (-TRANSLATION_STEP));
+    break;
+  case GLFW_KEY_D:
+    camera->Translate(camera->right * TRANSLATION_STEP);
+    break;
+  case GLFW_KEY_Q:
+    camera->Translate(camera->up * (-TRANSLATION_STEP));
+    break;
+  case GLFW_KEY_E:
+    camera->Translate(camera->up * TRANSLATION_STEP);
+    break;
+  case GLFW_KEY_UP:
+    camera->Tilt(-ROTATION_STEP);
+    break;
+  case GLFW_KEY_DOWN:
+    camera->Tilt(ROTATION_STEP);
+    break;
+  case GLFW_KEY_LEFT:
+    camera->Pan(ROTATION_STEP);
+    break;
+  case GLFW_KEY_RIGHT:
+    camera->Pan(-ROTATION_STEP);
+    break;
+  case GLFW_KEY_Z:
+    camera->Roll(-ROTATION_STEP);
+    break;
+  case GLFW_KEY_X:
+    camera->Roll(ROTATION_STEP);
+    break;
+  case GLFW_KEY_EQUAL:
+    camera->Zoom(ZOOM_FACTOR);
+    break;
+  case GLFW_KEY_MINUS:
+    camera->Zoom(1.0F / ZOOM_FACTOR);
+    break;
+  default:
+    break;
+  }
+}
 
 void Scene::HandleMouseButton(int button, int action, int mods) {
   if (action == GLFW_PRESS) {
