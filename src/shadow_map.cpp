@@ -10,12 +10,12 @@ ShadowMap::ShadowMap(int _width, int _height) : width(_width), height(_height) {
 
   depth_buffer.resize(static_cast<long>(width) * height);
   light_fov = DEFAULT_LIGHT_FOV;
-  Clear();
+  ClearDepthBuffer();
 }
 
-void ShadowMap::Clear() { std::ranges::fill(depth_buffer.begin(), depth_buffer.end(), 0.0F); }
+auto ShadowMap::GetPosition() -> Vector3 { return light_position; }
 
-void ShadowMap::SetLightPosition(Vector3 position, Vector3 look_at, Vector3 up_vector) {
+void ShadowMap::SetPosition(Vector3 position, Vector3 look_at, Vector3 up_vector) {
   light_position = position;
 
   Vector3 forward = (look_at - position).GetNormal();
@@ -27,21 +27,7 @@ void ShadowMap::SetLightPosition(Vector3 position, Vector3 look_at, Vector3 up_v
   light_view_matrix.SetColumn(2, forward);
 }
 
-auto ShadowMap::ProjectToLightSpace(Vector3 world_point, Vector3 &light_space_point) -> int {
-  Vector3 camera_space = light_view_matrix.GetInverse() * (world_point - light_position);
-
-  if (camera_space[2] <= 0.0F) {
-    return 0;
-  }
-
-  light_space_point[0] = camera_space[0] / camera_space[2];
-  light_space_point[1] = camera_space[1] / camera_space[2];
-  light_space_point[2] = 1.0F / camera_space[2];
-
-  return 1;
-}
-
-auto ShadowMap::GetDepth(int u_coordinate, int v_coordinate) -> float {
+auto ShadowMap::GetDepthBuffer(int u_coordinate, int v_coordinate) -> float {
   if (u_coordinate < 0 || u_coordinate >= width || v_coordinate < 0 || v_coordinate >= height) {
     return 0.0F;
   }
@@ -49,7 +35,7 @@ auto ShadowMap::GetDepth(int u_coordinate, int v_coordinate) -> float {
   return depth_buffer[idx];
 }
 
-void ShadowMap::SetDepth(int u_coordinate, int v_coordinate, float depth) {
+void ShadowMap::SetDepthBuffer(int u_coordinate, int v_coordinate, float depth) {
   if (u_coordinate < 0 || u_coordinate >= width || v_coordinate < 0 || v_coordinate >= height) {
     return;
   }
@@ -58,9 +44,11 @@ void ShadowMap::SetDepth(int u_coordinate, int v_coordinate, float depth) {
   depth_buffer[idx] = depth;
 }
 
+void ShadowMap::ClearDepthBuffer() { std::ranges::fill(depth_buffer.begin(), depth_buffer.end(), 0.0F); }
+
 auto ShadowMap::IsInShadow(Vector3 world_point, float epsilon) -> bool {
   Vector3 light_space;
-  if (ProjectToLightSpace(world_point, light_space) == 0) {
+  if (Project(world_point, light_space) == 0) {
     return true;
   }
 
@@ -72,6 +60,20 @@ auto ShadowMap::IsInShadow(Vector3 world_point, float epsilon) -> bool {
     return true;
   }
 
-  float stored_depth = GetDepth(static_cast<int>(u_coordinate), static_cast<int>(v_coordinate));
+  float stored_depth = GetDepthBuffer(static_cast<int>(u_coordinate), static_cast<int>(v_coordinate));
   return (light_space[2] + epsilon) < stored_depth;
+}
+
+auto ShadowMap::Project(Vector3 world_point, Vector3 &light_space_point) -> int {
+  Vector3 camera_space = light_view_matrix.GetInverse() * (world_point - light_position);
+
+  if (camera_space[2] <= 0.0F) {
+    return 0;
+  }
+
+  light_space_point[0] = camera_space[0] / camera_space[2];
+  light_space_point[1] = camera_space[1] / camera_space[2];
+  light_space_point[2] = 1.0F / camera_space[2];
+
+  return 1;
 }

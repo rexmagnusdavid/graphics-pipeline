@@ -5,15 +5,14 @@
 Projector::Projector(Vector3 _position, Vector3 _direction, float _fov)
     : position(_position), direction(_direction.GetNormal()), fov(_fov), texture_width(0), texture_height(0) {}
 
-void Projector::SetTexture(const std::vector<unsigned int> &new_texture, int new_width, int new_height) {
-  texture = new_texture;
-  texture_width = new_width;
-  texture_height = new_height;
-}
+auto Projector::GetPosition() -> Vector3 { return position; }
 
-void Projector::Update(Vector3 pos, Vector3 dir) {
-  position = pos;
-  direction = dir.GetNormal();
+void Projector::SetPosition(Vector3 new_position) { position = new_position; }
+
+auto Projector::GetDirection() -> Vector3 { return direction; }
+
+void Projector::SetDirection(Vector3 new_direction) {
+  direction = new_direction.GetNormal();
 
   Vector3 up_vector(0.0F, 1.0F, 0.0F);
   if (fabsf(direction[0]) < fabsf(direction[1])) {
@@ -26,6 +25,14 @@ void Projector::Update(Vector3 pos, Vector3 dir) {
   view_matrix.SetColumn(0, right_vector);
   view_matrix.SetColumn(1, up_vector);
   view_matrix.SetColumn(2, direction);
+}
+
+auto Projector::GetTexture() -> std::vector<unsigned int> { return texture; }
+
+void Projector::SetTexture(const std::vector<unsigned int> &new_texture, int new_width, int new_height) {
+  texture = new_texture;
+  texture_width = new_width;
+  texture_height = new_height;
 }
 
 auto Projector::ProjectPoint(Vector3 world_point, int &u_coordinate, int &v_coordinate) -> bool {
@@ -46,7 +53,7 @@ auto Projector::ProjectPoint(Vector3 world_point, int &u_coordinate, int &v_coor
   return (u_coordinate >= 0 && u_coordinate < texture_width && v_coordinate >= 0 && v_coordinate < texture_height);
 }
 
-auto Projector::GetProjectedColor(Vector3 world_point) -> Vector3 {
+auto Projector::ProjectColor(Vector3 world_point) -> Vector3 {
   int u_coordinate;
   int v_coordinate;
   if (!ProjectPoint(world_point, u_coordinate, v_coordinate) || texture.empty()) {

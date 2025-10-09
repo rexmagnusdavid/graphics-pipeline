@@ -15,8 +15,15 @@ public:
   std::vector<unsigned int> texture;
   Projector(Vector3 _position, Vector3 _direction, float _fov);
 
+  auto GetPosition() -> Vector3;
+  void SetPosition(Vector3 new_position);
+
+  auto GetDirection() -> Vector3;
+  void SetDirection(Vector3 new_direction);
+
+  auto GetTexture() -> std::vector<unsigned int>;
   void SetTexture(const std::vector<unsigned int> &texture, int width, int height);
-  void Update(Vector3 position, Vector3 direction);
+
   auto ProjectPoint(Vector3 world_point, int &u_coordinate, int &v_coordinate) -> bool;
-  auto GetProjectedColor(Vector3 world_point) -> Vector3;
+  auto ProjectColor(Vector3 world_point) -> Vector3;
 };

@@ -14,14 +14,14 @@ public:
   float light_fov;
   ShadowMap(int _width, int _height);
 
-  void Clear();
+  auto GetPosition() -> Vector3;
+  void SetPosition(Vector3 position, Vector3 look_at, Vector3 up_vector);
 
-  void SetLightPosition(Vector3 position, Vector3 look_at, Vector3 up_vector);
-
-  auto ProjectToLightSpace(Vector3 world_point, Vector3 &light_space_point) -> int;
-
-  auto GetDepth(int u_coordinate, int v_coordinate) -> float;
-  void SetDepth(int u_coordinate, int v_coordinate, float depth);
+  auto GetDepthBuffer(int u_coordinate, int v_coordinate) -> float;
+  void SetDepthBuffer(int u_coordinate, int v_coordinate, float depth);
+  void ClearDepthBuffer();
 
   auto IsInShadow(Vector3 world_point, float epsilon) -> bool;
+
+  auto Project(Vector3 world_point, Vector3 &light_space_point) -> int;
 };
