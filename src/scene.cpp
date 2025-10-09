@@ -150,6 +150,63 @@ void Scene::DrawMeshNormals(TriangleMesh *mesh, int size) {
   }
 }
 
+void Scene::DrawMeshFilled(TriangleMesh *mesh, bool use_lighting) {
+  framebuffer->z_buffer.resize(static_cast<long>(framebuffer->width) * framebuffer->height);
+  framebuffer->ClearZBuffer();
+
+  for (int i = 0; i < static_cast<int>(mesh->triangles.size()) / 3; i++) {
+    std::array<unsigned int, 3> indices;
+    std::array<Vector3, 3> vertices;
+    std::array<Vector3, 3> colors;
+
+    indices[0] = mesh->triangles[(i * 3) + 0];
+    indices[1] = mesh->triangles[(i * 3) + 1];
+    indices[2] = mesh->triangles[(i * 3) + 2];
+
+    vertices[0] = mesh->vertices[indices[0]];
+    vertices[1] = mesh->vertices[indices[1]];
+    vertices[2] = mesh->vertices[indices[2]];
+
+    if (use_lighting && !mesh->colors.empty()) {
+      colors[0] = mesh->colors[indices[0]];
+      colors[1] = mesh->colors[indices[1]];
+      colors[2] = mesh->colors[indices[2]];
+    } else {
+      colors[0] = Vector3(1.0F, 1.0F, 1.0F);
+      colors[1] = Vector3(1.0F, 1.0F, 1.0F);
+      colors[2] = Vector3(1.0F, 1.0F, 1.0F);
+    }
+
+    std::array<Vector3, 3> projected_points;
+    std::array<float, 3> depths;
+    bool all_visible = true;
+
+    for (int j = 0; j < 3; j++) {
+      if (camera->Project(vertices[j], projected_points[j]) == 0) {
+        all_visible = false;
+        break;
+      }
+      depths[j] = projected_points[j][2];
+    }
+
+    if (!all_visible) {
+      continue;
+    }
+
+    float focal_length = camera->GetFocalLength();
+
+    std::array<Vector3, 3> screen_points;
+    for (int j = 0; j < 3; j++) {
+      float u_coordinate = (static_cast<float>(camera->width) / (float)2) + (projected_points[j][0] * focal_length);
+      float v_coordinate = (static_cast<float>(camera->height) / (float)2) - (projected_points[j][1] * focal_length);
+      screen_points[j] = Vector3(u_coordinate, v_coordinate, 0.0F);
+    }
+
+    framebuffer->DrawTriangleFilled(screen_points[0], screen_points[1], screen_points[2], colors[0], colors[1],
+                                    colors[2], depths[0], depths[1], depths[2]);
+  }
+}
+
 void Scene::KeyCallback(GLFWwindow *window, int key, int scan_code, int action, int mods) {
   auto *scene = static_cast<Scene *>(glfwGetWindowUserPointer(window));
   if (scene != nullptr) {
