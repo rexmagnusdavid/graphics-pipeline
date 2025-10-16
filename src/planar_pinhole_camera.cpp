@@ -56,24 +56,36 @@ void PlanarPinholeCamera::SetHorizontalFov(float new_horizontal_fov) {
 }
 
 void PlanarPinholeCamera::Pan(float angle) {
-  right = right.RotateAboutAxis(Vector3(0.0F, 0.0F, 0.0F), up, angle);
-  forward = forward.RotateAboutAxis(Vector3(0.0F, 0.0F, 0.0F), up, angle);
-  right = right.GetNormal();
-  forward = forward.GetNormal();
+  float cos_angle = cosf(angle);
+  float sin_angle = sinf(angle);
+
+  Vector3 new_right = right * cos_angle + forward * sin_angle;
+  Vector3 new_forward = forward * cos_angle - right * sin_angle;
+
+  right = new_right.GetNormal();
+  forward = new_forward.GetNormal();
 }
 
 void PlanarPinholeCamera::Tilt(float angle) {
-  up = up.RotateAboutAxis(Vector3(0.0F, 0.0F, 0.0F), right, angle);
-  forward = forward.RotateAboutAxis(Vector3(0.0F, 0.0F, 0.0F), right, angle);
-  up = up.GetNormal();
-  forward = forward.GetNormal();
+  float cos_angle = cosf(angle);
+  float sin_angle = sinf(angle);
+
+  Vector3 new_up = up * cos_angle - forward * sin_angle;
+  Vector3 new_forward = forward * cos_angle + up * sin_angle;
+
+  up = new_up.GetNormal();
+  forward = new_forward.GetNormal();
 }
 
 void PlanarPinholeCamera::Roll(float angle) {
-  right = right.RotateAboutAxis(Vector3(0.0F, 0.0F, 0.0F), forward, angle);
-  up = up.RotateAboutAxis(Vector3(0.0F, 0.0F, 0.0F), forward, angle);
-  right = right.GetNormal();
-  up = up.GetNormal();
+  float cos_angle = cosf(angle);
+  float sin_angle = sinf(angle);
+
+  Vector3 new_right = right * cos_angle - up * sin_angle;
+  Vector3 new_up = up * cos_angle + right * sin_angle;
+
+  right = new_right.GetNormal();
+  up = new_up.GetNormal();
 }
 
 void PlanarPinholeCamera::Zoom(float factor) {
