@@ -56,18 +56,24 @@ void PlanarPinholeCamera::SetHorizontalFov(float new_horizontal_fov) {
 }
 
 void PlanarPinholeCamera::Pan(float angle) {
-  right = right.RotateAboutAxis(Vector3(0, 0, 0), up, angle);
-  forward = forward.RotateAboutAxis(Vector3(0, 0, 0), up, angle);
+  right = right.RotateAboutAxis(Vector3(0.0F, 0.0F, 0.0F), up, angle);
+  forward = forward.RotateAboutAxis(Vector3(0.0F, 0.0F, 0.0F), up, angle);
+  right = right.GetNormal();
+  forward = forward.GetNormal();
 }
 
 void PlanarPinholeCamera::Tilt(float angle) {
-  up = up.RotateAboutAxis(Vector3(0, 0, 0), right, angle);
-  forward = forward.RotateAboutAxis(Vector3(0, 0, 0), right, angle);
+  up = up.RotateAboutAxis(Vector3(0.0F, 0.0F, 0.0F), right, angle);
+  forward = forward.RotateAboutAxis(Vector3(0.0F, 0.0F, 0.0F), right, angle);
+  up = up.GetNormal();
+  forward = forward.GetNormal();
 }
 
 void PlanarPinholeCamera::Roll(float angle) {
-  right = right.RotateAboutAxis(Vector3(0, 0, 0), forward, angle);
-  up = up.RotateAboutAxis(Vector3(0, 0, 0), forward, angle);
+  right = right.RotateAboutAxis(Vector3(0.0F, 0.0F, 0.0F), forward, angle);
+  up = up.RotateAboutAxis(Vector3(0.0F, 0.0F, 0.0F), forward, angle);
+  right = right.GetNormal();
+  up = up.GetNormal();
 }
 
 void PlanarPinholeCamera::Zoom(float factor) {
