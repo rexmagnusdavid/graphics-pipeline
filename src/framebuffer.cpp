@@ -6,6 +6,7 @@
 #include <tiffio.h>
 
 #include "graphics_pipeline/color.h"
+#include "graphics_pipeline/texture.h"
 
 Framebuffer::Framebuffer(int _width, int _height, const char *title) {
   width = _width;
@@ -398,5 +399,129 @@ void Framebuffer::DrawTriangleFilled(Vector3 point_0, Vector3 point_1, Vector3 p
     auto [x_right, color_right, depth_right] =
         interpolate_edge(middle_point, point_2, middle_color, color_2, middle_depth, depth_2, scanline_y);
     fill_scanline(scanline_y, x_left, x_right, color_left, color_right, depth_left, depth_right);
+  }
+}
+
+void Framebuffer::DrawTriangleFilled(Vector3 point_0, Vector3 point_1, Vector3 point_2, Vector3 texture_coordinate_0,
+                                     Vector3 texture_coordinate_1, Vector3 texture_coordinate_2, float depth_0,
+                                     float depth_1, float depth_2, Texture *texture) {
+  if (texture == nullptr || texture->pixels.empty()) {
+    return;
+  }
+
+  if (point_0[1] > point_1[1]) {
+    std::swap(point_0, point_1);
+    std::swap(texture_coordinate_0, texture_coordinate_1);
+    std::swap(depth_0, depth_1);
+  }
+  if (point_0[1] > point_2[1]) {
+    std::swap(point_0, point_2);
+    std::swap(texture_coordinate_0, texture_coordinate_2);
+    std::swap(depth_0, depth_2);
+  }
+  if (point_1[1] > point_2[1]) {
+    std::swap(point_1, point_2);
+    std::swap(texture_coordinate_1, texture_coordinate_2);
+    std::swap(depth_1, depth_2);
+  }
+
+  constexpr float EPSILON = 0.001F;
+
+  auto fill_scanline = [&](int scanline_y, float start_x, float end_x, Vector3 start_texture_coordinate,
+                           Vector3 end_texture_coordinate, float start_depth, float end_depth) {
+    if (start_x > end_x) {
+      std::swap(start_x, end_x);
+      std::swap(start_texture_coordinate, end_texture_coordinate);
+      std::swap(start_depth, end_depth);
+    }
+
+    int begin_x = static_cast<int>(start_x);
+    int finish_x = static_cast<int>(end_x);
+
+    for (int pixel_x = begin_x; pixel_x <= finish_x; pixel_x++) {
+      if (pixel_x < 0 || pixel_x >= width || scanline_y < 0 || scanline_y >= height) {
+        continue;
+      }
+
+      float interpolation_t =
+          (finish_x == begin_x) ? 0.0F : static_cast<float>(pixel_x - begin_x) / static_cast<float>(finish_x - begin_x);
+      float current_depth = start_depth + ((end_depth - start_depth) * interpolation_t);
+
+      if (!IsFarther(pixel_x, scanline_y, current_depth)) {
+        Vector3 current_texture_coordinate =
+            start_texture_coordinate + (end_texture_coordinate - start_texture_coordinate) * interpolation_t;
+        unsigned int color = texture->Sample(current_texture_coordinate[0], current_texture_coordinate[1]);
+        SetPixel(pixel_x, scanline_y, color);
+        SetZBuffer(pixel_x, scanline_y, current_depth);
+      }
+    }
+  };
+
+  auto interpolate_edge = [](Vector3 start_point, Vector3 end_point, Vector3 start_texture_coordinate,
+                             Vector3 end_texture_coordinate, float start_depth, float end_depth,
+                             int scanline_y) -> std::tuple<float, Vector3, float> {
+    constexpr float MIN_HEIGHT_DIFF = 0.1F;
+    if (fabsf(end_point[1] - start_point[1]) < MIN_HEIGHT_DIFF) {
+      return {start_point[0], start_texture_coordinate, start_depth};
+    }
+    float interpolation_t =
+        static_cast<float>(scanline_y - static_cast<int>(start_point[1])) / (end_point[1] - start_point[1]);
+    float interpolated_x = start_point[0] + ((end_point[0] - start_point[0]) * interpolation_t);
+    Vector3 interpolated_texture_coordinate =
+        start_texture_coordinate + (end_texture_coordinate - start_texture_coordinate) * interpolation_t;
+    float interpolated_depth = start_depth + ((end_depth - start_depth) * interpolation_t);
+    return {interpolated_x, interpolated_texture_coordinate, interpolated_depth};
+  };
+
+  if (fabsf(point_1[1] - point_2[1]) < EPSILON) {
+    for (int scanline_y = static_cast<int>(point_0[1]); scanline_y <= static_cast<int>(point_1[1]); scanline_y++) {
+      auto [x_left, texture_coordinate_left, depth_left] =
+          interpolate_edge(point_0, point_1, texture_coordinate_0, texture_coordinate_1, depth_0, depth_1, scanline_y);
+      auto [x_right, texture_coordinate_right, depth_right] =
+          interpolate_edge(point_0, point_2, texture_coordinate_0, texture_coordinate_2, depth_0, depth_2, scanline_y);
+      fill_scanline(scanline_y, x_left, x_right, texture_coordinate_left, texture_coordinate_right, depth_left,
+                    depth_right);
+    }
+    return;
+  }
+
+  if (fabsf(point_0[1] - point_1[1]) < EPSILON) {
+    for (int scanline_y = static_cast<int>(point_0[1]); scanline_y <= static_cast<int>(point_2[1]); scanline_y++) {
+      auto [x_left, texture_coordinate_left, depth_left] =
+          interpolate_edge(point_0, point_2, texture_coordinate_0, texture_coordinate_2, depth_0, depth_2, scanline_y);
+      auto [x_right, texture_coordinate_right, depth_right] =
+          interpolate_edge(point_1, point_2, texture_coordinate_1, texture_coordinate_2, depth_1, depth_2, scanline_y);
+      fill_scanline(scanline_y, x_left, x_right, texture_coordinate_left, texture_coordinate_right, depth_left,
+                    depth_right);
+    }
+    return;
+  }
+
+  float middle_t = (point_1[1] - point_0[1]) / (point_2[1] - point_0[1]);
+  Vector3 middle_point;
+  middle_point[0] = point_0[0] + (point_2[0] - point_0[0]) * middle_t;
+  middle_point[1] = point_1[1];
+  middle_point[2] = 0.0F;
+  Vector3 middle_texture_coordinate = texture_coordinate_0 + (texture_coordinate_2 - texture_coordinate_0) * middle_t;
+  float middle_depth = depth_0 + ((depth_2 - depth_0) * middle_t);
+
+  for (int scanline_y = static_cast<int>(point_0[1]); scanline_y <= static_cast<int>(point_1[1]); scanline_y++) {
+    auto [x_left, texture_coordinate_left, depth_left] =
+        interpolate_edge(point_0, point_1, texture_coordinate_0, texture_coordinate_1, depth_0, depth_1, scanline_y);
+    auto [x_right, texture_coordinate_right, depth_right] = interpolate_edge(
+        point_0, middle_point, texture_coordinate_0, middle_texture_coordinate, depth_0, middle_depth, scanline_y);
+    fill_scanline(scanline_y, x_left, x_right, texture_coordinate_left, texture_coordinate_right, depth_left,
+                  depth_right);
+  }
+
+  constexpr int SCANLINE_OFFSET = 1;
+  for (int scanline_y = static_cast<int>(point_1[1]) + SCANLINE_OFFSET; scanline_y <= static_cast<int>(point_2[1]);
+       scanline_y++) {
+    auto [x_left, texture_coordinate_left, depth_left] =
+        interpolate_edge(point_1, point_2, texture_coordinate_1, texture_coordinate_2, depth_1, depth_2, scanline_y);
+    auto [x_right, texture_coordinate_right, depth_right] = interpolate_edge(
+        middle_point, point_2, middle_texture_coordinate, texture_coordinate_2, middle_depth, depth_2, scanline_y);
+    fill_scanline(scanline_y, x_left, x_right, texture_coordinate_left, texture_coordinate_right, depth_left,
+                  depth_right);
   }
 }

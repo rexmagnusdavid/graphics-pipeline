@@ -42,4 +42,7 @@ public:
   void DrawTriangleFilled(Vector3 point_0, Vector3 point_1, Vector3 point_2, unsigned int color);
   void DrawTriangleFilled(Vector3 point_0, Vector3 point_1, Vector3 point_2, Vector3 color_0, Vector3 color_1,
                           Vector3 color_2, float depth_0, float depth_1, float depth_2);
+  void DrawTriangleFilled(Vector3 point_0, Vector3 point_1, Vector3 point_2, Vector3 texture_coordinate_0,
+                          Vector3 texture_coordinate_1, Vector3 texture_coordinate_2, float depth_0, float depth_1,
+                          float depth_2, class Texture *texture);
 };

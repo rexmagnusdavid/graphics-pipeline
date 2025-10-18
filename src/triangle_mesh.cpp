@@ -42,7 +42,7 @@ void TriangleMesh::LoadBinary(char *file_name) {
   }
 
   input.read(&has_data, 1);
-  std::vector<float> texture_coordinates;
+  texture_coordinates.clear();
   if (has_data == 'y') {
     texture_coordinates.resize(static_cast<size_t>(vertices_count) * 2);
   }
@@ -99,7 +99,9 @@ void TriangleMesh::SaveBinary(char *file_name) {
   has_data = (!normals.empty() && normals.size() == vertices.size()) ? 'y' : 'n';
   output.write(&has_data, 1);
 
-  has_data = 'n';
+  has_data = (!texture_coordinates.empty() && texture_coordinates.size() == static_cast<size_t>(vertices_count) * 2)
+                 ? 'y'
+                 : 'n';
   output.write(&has_data, 1);
 
   output.write(reinterpret_cast<const char *>(vertices.data()),
@@ -113,6 +115,11 @@ void TriangleMesh::SaveBinary(char *file_name) {
   if (!normals.empty() && normals.size() == vertices.size()) {
     output.write(reinterpret_cast<const char *>(normals.data()),
                  static_cast<std::streamsize>(static_cast<size_t>(vertices_count) * 3 * sizeof(float)));
+  }
+
+  if (!texture_coordinates.empty() && texture_coordinates.size() == static_cast<size_t>(vertices_count) * 2) {
+    output.write(reinterpret_cast<const char *>(texture_coordinates.data()),
+                 static_cast<std::streamsize>(static_cast<size_t>(vertices_count) * 2 * sizeof(float)));
   }
 
   int triangles_count = static_cast<int>(triangles.size()) / 3;
@@ -404,6 +411,46 @@ auto TriangleMesh::Cylinder(Vector3 position, float radius, float height, int su
       mesh.triangles[triangle_index++] = index;
     }
   }
+
+  return mesh;
+}
+
+auto TriangleMesh::Quad(Vector3 position, Vector3 normal, Vector3 up_hint, float width, float height) -> TriangleMesh {
+  TriangleMesh mesh;
+
+  constexpr int NUM_VERTICES = 4;
+  constexpr int NUM_TEXTURE_COORDS = 8;
+
+  Vector3 forward_vector = normal.GetNormal();
+  Vector3 right_vector = (forward_vector.Cross(up_hint)).GetNormal();
+  Vector3 up_vector = (right_vector.Cross(forward_vector)).GetNormal();
+
+  constexpr float HALF = 0.5F;
+  Vector3 half_right = right_vector * (width * HALF);
+  Vector3 half_up = up_vector * (height * HALF);
+
+  mesh.vertices.resize(NUM_VERTICES);
+  mesh.vertices[0] = position - half_right - half_up;
+  mesh.vertices[1] = position + half_right - half_up;
+  mesh.vertices[2] = position + half_right + half_up;
+  mesh.vertices[3] = position - half_right + half_up;
+
+  mesh.normals.resize(NUM_VERTICES);
+  for (int i = 0; i < NUM_VERTICES; i++) {
+    mesh.normals[i] = forward_vector;
+  }
+
+  mesh.colors.resize(NUM_VERTICES);
+  for (int i = 0; i < NUM_VERTICES; i++) {
+    mesh.colors[i] = Vector3(1.0F, 1.0F, 1.0F);
+  }
+
+  constexpr std::array<float, NUM_TEXTURE_COORDS> texture_coord_data = {0.0F, 0.0F, 1.0F, 0.0F, 1.0F, 1.0F, 0.0F, 1.0F};
+
+  mesh.texture_coordinates.assign(texture_coord_data.begin(), texture_coord_data.end());
+
+  mesh.triangles = {0, 1, 2, 0, 2, 3};
+  mesh.texture = nullptr;
 
   return mesh;
 }

@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "texture.h"
 #include "vector_3.h"
 
 class TriangleMesh {
@@ -10,6 +11,8 @@ public:
   std::vector<Vector3> vertices;
   std::vector<Vector3> normals;
   std::vector<unsigned int> triangles;
+  std::vector<float> texture_coordinates;
+  Texture *texture;
   TriangleMesh() = default;
 
   void LoadBinary(char *file_name);
@@ -29,4 +32,5 @@ public:
   static auto Sphere(Vector3 position, float radius, int subdivisions, unsigned int color) -> TriangleMesh;
   static auto Cylinder(Vector3 position, float radius, float height, int subdivisions, unsigned int color)
       -> TriangleMesh;
+  static auto Quad(Vector3 position, Vector3 normal, Vector3 up_hint, float width, float height) -> TriangleMesh;
 };

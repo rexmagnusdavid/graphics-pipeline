@@ -1,7 +1,8 @@
 #pragma once
 
-#include "vector_3.h"
 #include <vector>
+
+#include "vector_3.h"
 
 class Lighting {
 public:
@@ -13,7 +14,6 @@ public:
     Vector3 color;
     float spot_angle;
     bool enabled;
-
     LightSource();
   };
 
